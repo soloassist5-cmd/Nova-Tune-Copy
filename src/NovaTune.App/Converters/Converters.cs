@@ -115,3 +115,12 @@ public sealed class EqualsConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         value is true ? parameter : Binding.DoNothing;
 }
+
+/// <summary>Ширина всплывающего окна: как у блока-владельца, но не уже 340 px.</summary>
+public sealed class PopupWidthConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is double w && !double.IsNaN(w) ? Math.Max(340, w) : 340.0;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}

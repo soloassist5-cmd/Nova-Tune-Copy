@@ -182,7 +182,11 @@ public sealed class HardwareService(StorageService storage, ILog log)
         sections.Add(new InfoSection("monitors", Loc.T("Мониторы", "Displays"),
             monitors.Count == 0
                 ? [new InfoItem(Loc.T("Мониторы", "Displays"), null, Loc.T("EnumDisplaySettings не вернул активных дисплеев", "EnumDisplaySettings returned no active displays"))]
-                : monitors.Select(m => new InfoItem(m.Name + (m.IsPrimary ? Loc.T(" (основной)", " (primary)") : ""), $"{m.Width}×{m.Height} @ {m.RefreshHz} Hz")).ToList()));
+                : monitors.Select(m => new InfoItem(
+                    m.Name + (m.IsPrimary ? Loc.T(" (основной)", " (primary)") : ""),
+                    $"{m.Width}×{m.Height} @ {m.RefreshHz} Hz"
+                    + (m.MaxRefreshHz is { } max ? Loc.T($" (максимум при этом разрешении — {max} Hz)", $" (maximum at this resolution: {max} Hz)") : "")
+                    + (m.BelowMaxRefresh ? Loc.T(" — работает ниже максимума!", " — running below maximum!") : ""))).ToList()));
 
         // ── Сеть
         sections.Add(new InfoSection("network", Loc.T("Сеть", "Network"), ReadNetwork()));
@@ -348,7 +352,8 @@ public sealed class HardwareService(StorageService storage, ILog log)
                         mode.PelsWidth,
                         mode.PelsHeight,
                         mode.DisplayFrequency,
-                        (adapter.StateFlags & NativeMethods.DisplayDevicePrimaryDevice) != 0));
+                        (adapter.StateFlags & NativeMethods.DisplayDevicePrimaryDevice) != 0,
+                        MaxRefreshAt(adapter.DeviceName, mode.PelsWidth, mode.PelsHeight)));
                 }
             }
 
@@ -356,6 +361,22 @@ public sealed class HardwareService(StorageService storage, ILog log)
         }
 
         return result;
+    }
+
+    /// <summary>Максимальная частота среди режимов, которые драйвер разрешает при данном разрешении.</summary>
+    private static int? MaxRefreshAt(string device, int width, int height)
+    {
+        var max = 0;
+        var mode = new NativeMethods.DevMode { Size = (short)Marshal.SizeOf<NativeMethods.DevMode>(), DeviceName = "", FormName = "" };
+        for (var i = 0; i < 4096 && NativeMethods.EnumDisplaySettings(device, i, ref mode); i++)
+        {
+            if (mode.PelsWidth == width && mode.PelsHeight == height && mode.DisplayFrequency > max)
+            {
+                max = mode.DisplayFrequency;
+            }
+        }
+
+        return max > 1 ? max : null;
     }
 
     private List<InfoItem> ReadNetwork()

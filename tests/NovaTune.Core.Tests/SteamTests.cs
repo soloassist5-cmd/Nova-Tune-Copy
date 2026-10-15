@@ -284,3 +284,23 @@ public sealed class Cs2AdvisorTests
         Assert.DoesNotContain(Cs2Advisor.Recommend(Cs2Profile.Competitive, amd), r => r.Setting.Contains("Reflex"));
     }
 }
+
+public sealed class MonitorRefreshTests
+{
+    [Theory]
+    [InlineData(60, 144, true)]
+    [InlineData(59, 60, false)]
+    [InlineData(144, 144, false)]
+    public void BelowMaxRefresh_IgnoresOneHzRounding(int current, int max, bool expected)
+    {
+        Assert.Equal(expected, new NovaTune.Core.Hardware.MonitorSummary("M", 1920, 1080, current, true, max).BelowMaxRefresh);
+    }
+
+    [Fact]
+    public void Readiness_FlagsMonitorBelowMax()
+    {
+        var hw = new NovaTune.Core.Hardware.HardwareSummary { Monitors = [new("M", 1920, 1080, 60, true, 165)] };
+        var checks = Cs2Advisor.Readiness(new Cs2ReadinessInput(hw, null, null, null, null, null, null));
+        Assert.Contains(checks, c => c.Level == NovaTune.Core.Analysis.CriterionLevel.Bad && c.Detail.Contains("165"));
+    }
+}

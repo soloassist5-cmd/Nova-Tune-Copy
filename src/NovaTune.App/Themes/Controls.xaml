@@ -10,6 +10,7 @@
     <conv:PercentWidthConverter x:Key="PercentWidth" />
     <conv:InverseBoolConverter x:Key="Not" />
     <conv:EqualsConverter x:Key="Eq" />
+    <conv:PopupWidthConverter x:Key="PopupWidth" />
 
     <!-- ═════════════ Типографика ═════════════ -->
     <Style x:Key="Text.Display" TargetType="TextBlock">
@@ -780,20 +781,19 @@
     </Style>
 
     <!-- ═════════════ Раскрывающийся блок ═════════════ -->
+    <!-- Содержимое открывается во всплывающем окне поверх страницы (с прокруткой), поэтому вёрстка не съезжает. -->
     <Style x:Key="Disclosure" TargetType="Expander">
         <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Expander">
-                    <StackPanel>
-                        <ToggleButton x:Name="Head" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Cursor="Hand" FocusVisualStyle="{x:Null}">
+                    <Grid x:Name="Host">
+                        <ToggleButton x:Name="Head" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Cursor="Hand" FocusVisualStyle="{x:Null}"
+                                      HorizontalAlignment="Left" IsHitTestVisible="{Binding IsOpen, ElementName=Pop, Converter={StaticResource Not}}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <StackPanel Orientation="Horizontal" Background="Transparent">
-                                        <Viewbox Width="12" Height="12" Margin="0,0,6,0" RenderTransformOrigin="0.5,0.5">
-                                            <Viewbox.RenderTransform>
-                                                <RotateTransform x:Name="Rot" Angle="0" />
-                                            </Viewbox.RenderTransform>
+                                        <Viewbox x:Name="Chev" Width="12" Height="12" Margin="0,0,6,0" RenderTransformOrigin="0.5,0.5">
                                             <Canvas Width="24" Height="24">
                                                 <Path Data="{StaticResource Icon.ChevronRight}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" StrokeThickness="3" />
                                             </Canvas>
@@ -802,33 +802,32 @@
                                     </StackPanel>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Trigger.EnterActions>
-                                                <BeginStoryboard>
-                                                    <Storyboard>
-                                                        <DoubleAnimation Storyboard.TargetName="Rot" Storyboard.TargetProperty="Angle" To="90" Duration="{StaticResource Anim.Fast}" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </Trigger.EnterActions>
-                                            <Trigger.ExitActions>
-                                                <BeginStoryboard>
-                                                    <Storyboard>
-                                                        <DoubleAnimation Storyboard.TargetName="Rot" Storyboard.TargetProperty="Angle" To="0" Duration="{StaticResource Anim.Fast}" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </Trigger.ExitActions>
+                                            <Setter TargetName="Chev" Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <RotateTransform Angle="90" />
+                                                </Setter.Value>
+                                            </Setter>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </ToggleButton.Template>
                             <TextBlock Text="{TemplateBinding Header}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource Brush.AccentText}" />
                         </ToggleButton>
-                        <ContentPresenter x:Name="Body" Margin="0,10,0,0" Visibility="Collapsed" />
-                    </StackPanel>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsExpanded" Value="True">
-                            <Setter TargetName="Body" Property="Visibility" Value="Visible" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
+                        <Popup x:Name="Pop" PlacementTarget="{Binding ElementName=Head}" Placement="Bottom" VerticalOffset="6" StaysOpen="False"
+                               AllowsTransparency="True" PopupAnimation="Fade" Focusable="False"
+                               IsOpen="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border Background="{DynamicResource Brush.Popup}" BorderBrush="{DynamicResource Brush.InputBorder}" BorderThickness="1" CornerRadius="12"
+                                    Padding="16,14,8,14" Margin="0,0,12,12" MaxHeight="380"
+                                    Width="{Binding ActualWidth, ElementName=Host, Converter={StaticResource PopupWidth}}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.35" Direction="270" />
+                                </Border.Effect>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                                    <ContentPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

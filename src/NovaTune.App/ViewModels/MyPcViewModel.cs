@@ -17,7 +17,10 @@ public sealed partial class MyPcViewModel : PageViewModel
 
     public override string Subtitle => Loc.T("Характеристики из WMI, реестра и Windows API", "Specifications from WMI, registry and Windows API");
 
-    public ObservableCollection<InfoSection> Sections { get; } = [];
+    /// <summary>Две колонки, каждая карточка своей высоты (раскладка «кирпичами» по объёму содержимого).</summary>
+    public ObservableCollection<InfoSection> LeftSections { get; } = [];
+
+    public ObservableCollection<InfoSection> RightSections { get; } = [];
 
     [ObservableProperty] private string _collectedAt = "";
 
@@ -33,10 +36,23 @@ public sealed partial class MyPcViewModel : PageViewModel
         try
         {
             _report = await S.Hardware.GetAsync(refresh, PageCts.Token);
-            Sections.Clear();
-            foreach (var s in _report.Sections)
+            LeftSections.Clear();
+            RightSections.Clear();
+            int left = 0, right = 0;
+            foreach (var section in _report.Sections)
             {
-                Sections.Add(s);
+                // Примерная высота: строки раздела + строки подразделов + заголовки.
+                var weight = 2 + section.Items.Count + (section.Children ?? []).Sum(c => 2 + c.Items.Count);
+                if (left <= right)
+                {
+                    LeftSections.Add(section);
+                    left += weight;
+                }
+                else
+                {
+                    RightSections.Add(section);
+                    right += weight;
+                }
             }
 
             CollectedAt = Loc.T("Собрано: ", "Collected: ") + _report.CollectedAt.LocalDateTime.ToString("g");

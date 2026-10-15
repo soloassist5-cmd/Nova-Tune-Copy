@@ -27,7 +27,14 @@ public sealed record VolumeSummary(char Letter, string? Label, ulong TotalBytes,
     public double UsedPercent => TotalBytes == 0 ? 0 : 100.0 * (TotalBytes - FreeBytes) / TotalBytes;
 }
 
-public sealed record MonitorSummary(string Name, int Width, int Height, int RefreshHz, bool IsPrimary);
+public sealed record MonitorSummary(string Name, int Width, int Height, int RefreshHz, bool IsPrimary, int? MaxRefreshHz = null)
+{
+    /// <summary>
+    /// Монитор работает ниже максимальной частоты, доступной при текущем разрешении.
+    /// Разница в 1 Гц не считается (59/60 Гц — особенность округления режимов).
+    /// </summary>
+    public bool BelowMaxRefresh => MaxRefreshHz is { } max && max - RefreshHz > 1;
+}
 
 /// <summary>Сводные характеристики для дашборда, рекомендаций CS2 и анализа.</summary>
 public sealed record HardwareSummary

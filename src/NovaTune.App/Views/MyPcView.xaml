@@ -29,6 +29,15 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+        <DataTemplate x:Key="SectionCard" DataType="{x:Type hw:InfoSection}">
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
+                    <ItemsControl ItemsSource="{Binding Items}" />
+                    <ItemsControl ItemsSource="{Binding Children}" ItemTemplate="{StaticResource SubSection}" />
+                </StackPanel>
+            </c:GlassPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
     <DockPanel Margin="{StaticResource Pad.Page}">
@@ -61,24 +70,15 @@
             </c:GlassPanel>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
-                <ItemsControl ItemsSource="{Binding Sections}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="2" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type hw:InfoSection}">
-                            <c:GlassPanel Margin="0,0,16,16">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
-                                    <ItemsControl ItemsSource="{Binding Items}" />
-                                    <ItemsControl ItemsSource="{Binding Children}" ItemTemplate="{StaticResource SubSection}" />
-                                </StackPanel>
-                            </c:GlassPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ItemsControl ItemsSource="{Binding LeftSections}" ItemTemplate="{StaticResource SectionCard}" VerticalAlignment="Top" />
+                    <ItemsControl Grid.Column="2" ItemsSource="{Binding RightSections}" ItemTemplate="{StaticResource SectionCard}" VerticalAlignment="Top" />
+                </Grid>
             </ScrollViewer>
 
             <TextBlock Text="{Binding ErrorText}" Style="{StaticResource Text.Body}" Foreground="{DynamicResource Brush.Error}" VerticalAlignment="Top"

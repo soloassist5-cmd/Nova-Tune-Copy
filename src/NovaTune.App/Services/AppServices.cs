@@ -78,6 +78,8 @@ public sealed class AppServices : IDisposable
 
     public ToastService Toasts { get; } = new();
 
+    public SessionRecorder Recorder { get; } = new();
+
     /// <summary>Мониторинг создаётся при первом обращении (нужна базовая частота CPU).</summary>
     public MonitoringService Monitoring => _monitoring ??= new MonitoringService(Log, ReadCpuBaseMhz())
     {
@@ -124,6 +126,7 @@ public sealed class AppServices : IDisposable
 
     public void Dispose()
     {
+        Recorder.Stop();
         _monitoring?.Dispose();
         Http.Dispose();
     }

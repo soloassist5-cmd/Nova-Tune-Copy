@@ -440,3 +440,49 @@ public sealed class JournalAndLogTests : IDisposable
         Assert.True(new FileInfo(log.CurrentFile).Length < 400);
     }
 }
+
+public sealed class MeasurementTests
+{
+    [Fact]
+    public void PollingRate_1000Hz()
+    {
+        var meter = new NovaTune.Core.Tools.PollingRateMeter(1_000_000);
+        for (long t = 0; t <= 2_000_000; t += 1000)
+        {
+            meter.Add(t);
+        }
+
+        Assert.InRange(meter.CurrentHz, 995, 1005);
+        Assert.Equal(1000, NovaTune.Core.Tools.PollingRateMeter.NearestStandard(meter.PeakHz));
+    }
+
+    [Fact]
+    public void PollingRate_PauseRestartsWindow()
+    {
+        var meter = new NovaTune.Core.Tools.PollingRateMeter(1_000_000);
+        for (long t = 0; t <= 500_000; t += 8000)
+        {
+            meter.Add(t);
+        }
+
+        // Пауза 2 секунды, затем движение с той же частотой — частота не должна «проседать» из-за паузы.
+        for (long t = 2_500_000; t <= 3_000_000; t += 8000)
+        {
+            meter.Add(t);
+        }
+
+        Assert.InRange(meter.CurrentHz, 120, 130);
+    }
+
+    [Fact]
+    public void ColumnStats_IgnoresNaN()
+    {
+        var s = new NovaTune.Core.Tools.ColumnStats();
+        s.Add(10);
+        s.Add(double.NaN);
+        s.Add(30);
+        Assert.Equal(20, s.Average);
+        Assert.Equal(30, s.Max);
+        Assert.Equal(2, s.Count);
+    }
+}

@@ -116,6 +116,21 @@ public static class Cs2Advisor
                 $"{gpu.Name}, {vram}" + (gpu.IsIntegrated ? Loc.T(" (встроенная)", " (integrated)") : "")));
         }
 
+        foreach (var m in hw.Monitors)
+        {
+            if (m.MaxRefreshHz is null)
+            {
+                continue;
+            }
+
+            checks.Add(new(
+                Loc.T("Частота монитора", "Monitor refresh rate"),
+                m.BelowMaxRefresh ? CriterionLevel.Bad : CriterionLevel.Good,
+                m.BelowMaxRefresh
+                    ? Loc.T($"{m.Name}: работает на {m.RefreshHz} Гц, а при этом разрешении поддерживает {m.MaxRefreshHz} Гц. Измените в Параметры → Дисплей → Дополнительные параметры дисплея.", $"{m.Name}: running at {m.RefreshHz} Hz but supports {m.MaxRefreshHz} Hz at this resolution. Change it in Settings → Display → Advanced display.")
+                    : Loc.T($"{m.Name}: {m.RefreshHz} Гц — максимум для текущего разрешения.", $"{m.Name}: {m.RefreshHz} Hz — the maximum for the current resolution.")));
+        }
+
         if (input.GameModeOn is { } gm)
         {
             checks.Add(new(Loc.T("Игровой режим Windows", "Windows Game Mode"), gm ? CriterionLevel.Good : CriterionLevel.Warning, gm ? Loc.T("Включён.", "On.") : Loc.T("Выключен.", "Off.")));

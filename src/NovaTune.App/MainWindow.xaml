@@ -31,6 +31,7 @@
         <DataTemplate DataType="{x:Type vm:BackupViewModel}"><v:BackupView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><v:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ToolsViewModel}"><v:ToolsView /></DataTemplate>
     </Window.Resources>
 
     <Grid x:Name="Root">
