@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Platform-independent logic: models, backup/transactions, VDF, cleanup engine, analysis.
-       Has no Windows dependencies so it can be unit-tested anywhere. -->
+  <!-- Платформонезависимая логика: модели, бэкап и транзакции, парсер VDF, движок очистки, анализ.
+       Не зависит от Windows, поэтому покрывается юнит-тестами на любой ОС. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>NovaTune.Core</RootNamespace>
