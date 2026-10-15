@@ -1,0 +1,88 @@
+<UserControl x:Class="NovaTune.App.Views.MyPcView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:hw="clr-namespace:NovaTune.Core.Hardware;assembly=NovaTune.Core">
+    <UserControl.Resources>
+        <!-- Строка «название — значение»; недоступные значения — приглушённым цветом с причиной. -->
+        <DataTemplate DataType="{x:Type hw:InfoItem}">
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.42*" />
+                    <ColumnDefinition Width="0.58*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Label}" Style="{StaticResource Text.Secondary}" Margin="0,0,12,0" />
+                <TextBlock x:Name="Value" Grid.Column="1" Text="{Binding DisplayValue}" Style="{StaticResource Text.Body}" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                    <Setter TargetName="Value" Property="Foreground" Value="{DynamicResource Brush.TextTertiary}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        <!-- Подраздел (видеокарта, модуль памяти, диск) -->
+        <DataTemplate x:Key="SubSection" DataType="{x:Type hw:InfoSection}">
+            <Border Background="{DynamicResource Brush.Input}" CornerRadius="12" Padding="14,12" Margin="0,4,0,8">
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" Margin="{StaticResource Gap.Bottom8}" />
+                    <ItemsControl ItemsSource="{Binding Items}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel Margin="{StaticResource Pad.Page}">
+        <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding CollectedAt}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right12}" />
+                <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
+                <Button Style="{StaticResource Button.Primary}" Command="{Binding CopyCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать сведения', 'Copy details'}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <!-- Скелетон загрузки -->
+            <c:GlassPanel VerticalAlignment="Top" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <Border Style="{StaticResource Skeleton}" Width="180" />
+                    <Border Style="{StaticResource Skeleton}" />
+                    <Border Style="{StaticResource Skeleton}" Width="420" HorizontalAlignment="Left" />
+                    <Border Style="{StaticResource Skeleton}" />
+                    <Border Style="{StaticResource Skeleton}" Width="320" HorizontalAlignment="Left" />
+                </StackPanel>
+            </c:GlassPanel>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
+                <ItemsControl ItemsSource="{Binding Sections}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type hw:InfoSection}">
+                            <c:GlassPanel Margin="0,0,16,16">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
+                                    <ItemsControl ItemsSource="{Binding Items}" />
+                                    <ItemsControl ItemsSource="{Binding Children}" ItemTemplate="{StaticResource SubSection}" />
+                                </StackPanel>
+                            </c:GlassPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <TextBlock Text="{Binding ErrorText}" Style="{StaticResource Text.Body}" Foreground="{DynamicResource Brush.Error}" VerticalAlignment="Top"
+                       Visibility="{Binding ErrorText, Converter={StaticResource NullToVis}}" />
+        </Grid>
+    </DockPanel>
+</UserControl>

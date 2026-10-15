@@ -53,12 +53,6 @@ public sealed partial class MainViewModel : ObservableObject
             new("settings", new("Настройки", "Settings"), "Icon.Settings", () => new SettingsViewModel(this)),
         ];
 
-        // Предварительная сборка: показываем только готовые страницы, чтобы не было пустых разделов.
-        foreach (var unfinished in Items.Where(i => i.Key != "dashboard").ToList())
-        {
-            Items.Remove(unfinished);
-        }
-
         Loc.Instance.LanguageChanged += (_, _) => RebuildPages();
     }
 
@@ -94,6 +88,13 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         CurrentPage = page;
+
+        // Датчики работают только на страницах, которые их показывают; иначе таймер и LibreHardwareMonitor освобождаются.
+        if (page is not IUsesMonitoring)
+        {
+            AppServices.Current.Monitoring.Suspend();
+        }
+
         _ = page.NavigatedToAsync();
     }
 

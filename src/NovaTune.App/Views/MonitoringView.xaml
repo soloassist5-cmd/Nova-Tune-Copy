@@ -1,0 +1,113 @@
+<UserControl x:Class="NovaTune.App.Views.MonitoringView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels">
+    <UserControl.Resources>
+        <DataTemplate DataType="{x:Type vm:SensorRow}">
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*" />
+                    <ColumnDefinition Width="0.6*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Secondary}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding Name}" Margin="0,0,12,0" />
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding Value}" Style="{StaticResource Text.Body}" />
+                    <TextBlock Text="{Binding Reason}" Style="{StaticResource Text.Caption}" Visibility="{Binding Reason, Converter={StaticResource NullToVis}}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Pad.Page}">
+            <Grid Margin="{StaticResource Gap.Bottom16}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{c:Tr 'Интервал', 'Interval'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right8}" />
+                    <ComboBox ItemsSource="{Binding Intervals}" SelectedItem="{Binding Interval}" DisplayMemberPath="Title" MinWidth="90" Margin="{StaticResource Gap.Right8}" />
+                    <Button Command="{Binding TogglePauseCommand}" c:Ui.Icon="{StaticResource Icon.Pause}" Content="{c:Tr 'Пауза', 'Pause'}"
+                            Visibility="{Binding IsPaused, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                    <Button Style="{StaticResource Button.Primary}" Command="{Binding TogglePauseCommand}" c:Ui.Icon="{StaticResource Icon.Play}" Content="{c:Tr 'Продолжить', 'Resume'}"
+                            Visibility="{Binding IsPaused, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Grid>
+
+            <Border Background="{DynamicResource Brush.WarningSoft}" CornerRadius="12" Padding="14,10" Margin="{StaticResource Gap.Bottom16}"
+                    Visibility="{Binding AdvancedStatus, Converter={StaticResource NullToVis}}">
+                <TextBlock Text="{Binding AdvancedStatus}" Style="{StaticResource Text.Body}" />
+            </Border>
+
+            <UniformGrid Columns="2">
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Загрузка CPU', 'CPU load'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding CpuLoad}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top4}" />
+                        <c:SparkChart Height="110" Margin="{StaticResource Gap.Top12}" Values="{Binding CpuLoadHistory}" Capacity="{Binding Capacity}" Stroke="{DynamicResource Brush.ChartCpu}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Загрузка GPU', 'GPU load'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding GpuLoad}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top4}" />
+                        <c:SparkChart Height="110" Margin="{StaticResource Gap.Top12}" Values="{Binding GpuLoadHistory}" Capacity="{Binding Capacity}" Stroke="{DynamicResource Brush.ChartGpu}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Температура CPU', 'CPU temperature'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding CpuTemp}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top4}" />
+                        <TextBlock Text="{Binding CpuTempReason}" Style="{StaticResource Text.Caption}" Visibility="{Binding CpuTempReason, Converter={StaticResource NullToVis}}" />
+                        <c:SparkChart Height="96" Margin="{StaticResource Gap.Top12}" Values="{Binding CpuTempHistory}" Capacity="{Binding Capacity}" AutoScale="True" Stroke="{DynamicResource Brush.ChartTemp}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Температура GPU', 'GPU temperature'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding GpuTemp}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top4}" />
+                        <TextBlock Text="{Binding GpuTempReason}" Style="{StaticResource Text.Caption}" Visibility="{Binding GpuTempReason, Converter={StaticResource NullToVis}}" />
+                        <c:SparkChart Height="96" Margin="{StaticResource Gap.Top12}" Values="{Binding GpuTempHistory}" Capacity="{Binding Capacity}" AutoScale="True" Stroke="{DynamicResource Brush.ChartTemp}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Оперативная память', 'Memory'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding Ram}" Style="{StaticResource Text.Value}" FontSize="20" Margin="{StaticResource Gap.Top4}" />
+                        <c:SparkChart Height="96" Margin="{StaticResource Gap.Top12}" Values="{Binding RamHistory}" Capacity="{Binding Capacity}" Stroke="{DynamicResource Brush.ChartRam}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+                <c:GlassPanel Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Частота CPU (эффективная)', 'CPU clock (effective)'}" Style="{StaticResource Text.Label}" />
+                        <TextBlock Text="{Binding CpuClock}" Style="{StaticResource Text.Value}" FontSize="20" Margin="{StaticResource Gap.Top4}" />
+                        <c:SparkChart Height="96" Margin="{StaticResource Gap.Top12}" Values="{Binding CpuClockHistory}" Capacity="{Binding Capacity}" AutoScale="True" Stroke="{DynamicResource Brush.ChartCpu}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+            </UniformGrid>
+
+            <c:GlassPanel Margin="0,0,16,16">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Видеокарты', 'Graphics cards'}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
+                    <ItemsControl ItemsSource="{Binding GpuRows}" />
+                    <TextBlock Text="{c:Tr 'Накопители (датчики)', 'Drives (sensors)'}" Style="{StaticResource Text.Subtitle}" Margin="0,8,0,12" />
+                    <ItemsControl ItemsSource="{Binding DiskRows}" />
+                    <TextBlock Text="{c:Tr 'Температуры дисков без расширенных датчиков недоступны. Можно один раз прочитать счётчики SMART с запросом прав администратора.', 'Drive temperatures are unavailable without advanced sensors. You can read SMART counters once with an administrator prompt.'}"
+                               Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Bottom8}" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding ReadSmartCommand}" c:Ui.Icon="{StaticResource Icon.Admin}" Content="{c:Tr 'Прочитать SMART', 'Read SMART'}"
+                                IsEnabled="{Binding IsReadingSmart, Converter={StaticResource Not}}" />
+                        <ContentControl Style="{StaticResource Spinner}" Margin="12,0,0,0" Visibility="{Binding IsReadingSmart, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding SmartRows}" Margin="{StaticResource Gap.Top12}" />
+                </StackPanel>
+            </c:GlassPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

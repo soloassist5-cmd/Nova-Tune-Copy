@@ -1,0 +1,83 @@
+<UserControl x:Class="NovaTune.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Pad.Page}" MaxWidth="900" HorizontalAlignment="Left">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="0,4,0,16" />
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Внешний вид', 'Appearance'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="{c:Tr 'Тема', 'Theme'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top12}" />
+                    <Border Style="{StaticResource SegmentHost}" Margin="{StaticResource Gap.Top4}">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Style="{StaticResource Segment}" GroupName="theme" Content="{c:Tr 'Тёмная', 'Dark'}" IsChecked="{Binding Theme, Converter={StaticResource Eq}, ConverterParameter=Dark}" />
+                            <RadioButton Style="{StaticResource Segment}" GroupName="theme" Content="{c:Tr 'Светлая', 'Light'}" IsChecked="{Binding Theme, Converter={StaticResource Eq}, ConverterParameter=Light}" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{c:Tr 'Язык', 'Language'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top12}" />
+                    <Border Style="{StaticResource SegmentHost}" Margin="{StaticResource Gap.Top4}">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Style="{StaticResource Segment}" GroupName="lang" Content="Русский" IsChecked="{Binding Language, Converter={StaticResource Eq}, ConverterParameter=Ru}" />
+                            <RadioButton Style="{StaticResource Segment}" GroupName="lang" Content="English" IsChecked="{Binding Language, Converter={StaticResource Eq}, ConverterParameter=En}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Датчики', 'Sensors'}" Style="{StaticResource Text.Subtitle}" />
+                    <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding AdvancedSensors}" Content="{c:Tr 'Расширенные датчики (температура CPU)', 'Advanced sensors (CPU temperature)'}" Margin="{StaticResource Gap.Top12}" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}"
+                               Text="{c:Tr 'Температуру CPU в Windows нельзя прочитать без драйвера ядра. LibreHardwareMonitor 0.9 использует подписанный драйвер PawnIO — его нужно установить отдельно, а NOVA TUNE запустить от имени администратора. Антивирус может реагировать на загрузку драйвера. Без этого показывается «—» с причиной, а не выдуманное значение.', 'CPU temperature cannot be read on Windows without a kernel driver. LibreHardwareMonitor 0.9 uses the signed PawnIO driver — install it separately and run NOVA TUNE as administrator. Antivirus may react to the driver. Without it, a dash with the reason is shown instead of a made-up value.'}" />
+                    <TextBlock Text="{Binding SensorsStatus}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}" />
+                    <WrapPanel Margin="{StaticResource Gap.Top12}">
+                        <Button Command="{Binding RestartElevatedCommand}" c:Ui.Icon="{StaticResource Icon.Admin}" Content="{c:Tr 'Перезапустить от имени администратора', 'Restart as administrator'}" Margin="0,0,8,8"
+                                Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                        <Button Style="{StaticResource Button.Ghost}" Command="{Binding OpenPawnIoCommand}" c:Ui.Icon="{StaticResource Icon.External}" Content="{c:Tr 'Сайт PawnIO', 'PawnIO website'}" Margin="0,0,8,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Бэкапы и журнал', 'Backups and logs'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="{c:Tr 'Папка бэкапов', 'Backup folder'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top12}" />
+                    <TextBlock Text="{Binding BackupFolder}" Style="{StaticResource Text.Mono}" Margin="{StaticResource Gap.Top4}" />
+                    <WrapPanel Margin="{StaticResource Gap.Top12}">
+                        <Button Command="{Binding ChooseBackupFolderCommand}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Изменить папку', 'Change folder'}" Margin="0,0,8,8" />
+                        <Button Style="{StaticResource Button.Ghost}" Command="{Binding OpenLogsCommand}" c:Ui.Icon="{StaticResource Icon.Report}" Content="{c:Tr 'Открыть журналы', 'Open logs'}" Margin="0,0,8,8" />
+                    </WrapPanel>
+                    <TextBlock Text="{c:Tr 'Интервал мониторинга меняется на странице «Мониторинг».', 'The monitoring interval is set on the Monitoring page.'}" Style="{StaticResource Text.Caption}" />
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel>
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'О программе', 'About'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top8}"><Run Text="NOVA TUNE " /><Run Text="{Binding Version, Mode=OneWay}" /></TextBlock>
+                    <TextBlock Text="{Binding Runtime}" Style="{StaticResource Text.Caption}" />
+                    <TextBlock Text="{c:Tr 'Лицензии компонентов', 'Third-party licenses'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top16}" />
+                    <ItemsControl ItemsSource="{Binding Licenses}" Margin="{StaticResource Gap.Top8}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:LicenseRow}">
+                                <Grid Margin="{StaticResource Gap.Bottom4}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Secondary}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding License}" Style="{StaticResource Text.Body}" Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </c:GlassPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

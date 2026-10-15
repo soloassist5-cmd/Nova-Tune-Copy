@@ -1,0 +1,91 @@
+<UserControl x:Class="NovaTune.App.Views.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels">
+    <DockPanel Margin="{StaticResource Pad.Page}">
+        <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="{StaticResource Gap.Right16}">
+                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" MaxWidth="640" HorizontalAlignment="Left" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Command="{Binding CreateRestorePointCommand}" c:Ui.Icon="{StaticResource Icon.Admin}" Content="{c:Tr 'Точка восстановления', 'Restore point'}" Margin="{StaticResource Gap.Right8}" />
+                <Button Style="{StaticResource Button.Primary}" Command="{Binding CreateCommand}" c:Ui.Icon="{StaticResource Icon.Shield}" Content="{c:Tr 'Создать бэкап', 'Create backup'}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.42*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="0.58*" />
+            </Grid.ColumnDefinitions>
+
+            <c:GlassPanel Padding="8">
+                <Grid>
+                    <ListBox Style="{StaticResource PlainList}" ItemsSource="{Binding Backups}" SelectedItem="{Binding Selected}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:BackupRow}">
+                                <StackPanel Margin="12,10">
+                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}">
+                                        <Run Text="{Binding Date, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Kind, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Status, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Count, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Text="{c:Tr 'Бэкапов пока нет. Они создаются автоматически перед каждой оптимизацией, а также по кнопке «Создать бэкап».', 'No backups yet. They are created automatically before every optimization and with the Create backup button.'}"
+                               Style="{StaticResource Text.Secondary}" Margin="16" VerticalAlignment="Top"
+                               Visibility="{Binding Backups.Count, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
+                </Grid>
+            </c:GlassPanel>
+
+            <c:GlassPanel Grid.Column="2" Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom12}">
+                        <TextBlock Text="{Binding Selected.Title}" Style="{StaticResource Text.Subtitle}" />
+                        <TextBlock Style="{StaticResource Text.Caption}">
+                            <Run Text="{Binding Selected.Date, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Selected.Status, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                    <WrapPanel DockPanel.Dock="Bottom" Margin="{StaticResource Gap.Top12}">
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding RestoreAllCommand}" c:Ui.Icon="{StaticResource Icon.Undo}" Content="{c:Tr 'Восстановить всё', 'Restore all'}" Margin="0,0,8,8" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                        <Button Command="{Binding RestoreSelectedCommand}" Content="{c:Tr 'Восстановить отмеченные', 'Restore selected'}" Margin="0,0,8,8" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                        <Button Style="{StaticResource Button.Ghost}" Command="{Binding OpenFolderCommand}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Папка', 'Folder'}" Margin="0,0,8,8" />
+                        <Button Style="{StaticResource Button.Danger}" Command="{Binding DeleteCommand}" c:Ui.Icon="{StaticResource Icon.Trash}" Content="{c:Tr 'Удалить', 'Delete'}" Margin="0,0,8,8" />
+                    </WrapPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:BackupItemRow}">
+                                    <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,10" Margin="{StaticResource Gap.Item}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanRestore}" VerticalAlignment="Top" Margin="0,2,10,0" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Target}" Style="{StaticResource Text.Mono}" Margin="{StaticResource Gap.Top4}" />
+                                                <TextBlock Text="{Binding Change}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}" />
+                                                <TextBlock Text="{Binding State}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.AccentText}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </c:GlassPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

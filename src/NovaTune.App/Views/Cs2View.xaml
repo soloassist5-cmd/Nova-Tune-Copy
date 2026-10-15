@@ -1,0 +1,164 @@
+<UserControl x:Class="NovaTune.App.Views.Cs2View"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels"
+             xmlns:steam="clr-namespace:NovaTune.Core.Steam;assembly=NovaTune.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Pad.Page}">
+            <Grid Margin="{StaticResource Gap.Bottom16}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="{StaticResource Gap.Right16}">
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
+                    <Button Style="{StaticResource Button.Primary}" Command="{Binding LaunchCommand}" c:Ui.Icon="{StaticResource Icon.Play}" Content="{c:Tr 'Запустить CS2', 'Launch CS2'}" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Статус -->
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="18" Height="18" Margin="{StaticResource Gap.Right8}">
+                            <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Crosshair}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" /></Canvas>
+                        </Viewbox>
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource Text.Subtitle}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding GameDir}" Style="{StaticResource Text.Mono}" Margin="{StaticResource Gap.Top8}" Visibility="{Binding GameDir, Converter={StaticResource NullToVis}}" />
+                    <WrapPanel Margin="{StaticResource Gap.Top12}">
+                        <Button Command="{Binding OpenGameFolderCommand}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Папка игры', 'Game folder'}" Margin="0,0,8,8" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                        <Button Command="{Binding OpenConfigFolderCommand}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Папка конфигов', 'Config folder'}" Margin="0,0,8,8" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                        <Button Command="{Binding BackupConfigsCommand}" c:Ui.Icon="{StaticResource Icon.Shield}" Content="{c:Tr 'Бэкап конфигов', 'Back up configs'}" Margin="0,0,8,8" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                        <Button Command="{Binding RestoreConfigsCommand}" c:Ui.Icon="{StaticResource Icon.Undo}" Content="{c:Tr 'Восстановить', 'Restore'}" Margin="0,0,8,8" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                        <Button Command="{Binding ChooseFolderCommand}" c:Ui.Icon="{StaticResource Icon.Search}" Content="{c:Tr 'Указать папку вручную', 'Select folder manually'}" Margin="0,0,8,8" />
+                        <Button Style="{StaticResource Button.Ghost}" Command="{Binding ResetManualPathCommand}" Content="{c:Tr 'Искать в Steam автоматически', 'Detect via Steam'}" Margin="0,0,8,8" />
+                        <Button Style="{StaticResource Button.Ghost}" Command="{Binding OpenSteamCommand}" c:Ui.Icon="{StaticResource Icon.Steam}" Content="{c:Tr 'Открыть Steam', 'Open Steam'}" Margin="0,0,8,8" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                    </WrapPanel>
+                </StackPanel>
+            </c:GlassPanel>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Готовность -->
+                <c:GlassPanel VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Готовность системы', 'System readiness'}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
+                        <ItemsControl ItemsSource="{Binding Readiness}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type steam:ReadinessCheck}">
+                                    <Grid Margin="{StaticResource Gap.Bottom12}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Viewbox Width="14" Height="14" VerticalAlignment="Top" Margin="0,3,10,0">
+                                            <Canvas Width="24" Height="24"><Path Data="{Binding Level, Converter={StaticResource LevelToIcon}}" Style="{StaticResource IconPath}" StrokeThickness="2.6" Stroke="{Binding Level, Converter={StaticResource LevelToBrush}}" /></Canvas>
+                                        </Viewbox>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource Text.Caption}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- Профиль и рекомендации -->
+                <c:GlassPanel Grid.Column="2" VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Профиль рекомендаций', 'Recommendation profile'}" Style="{StaticResource Text.Subtitle}" />
+                        <Border Style="{StaticResource SegmentHost}" Margin="0,12,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="cs2p" Content="Competitive" IsChecked="{Binding Profile, Converter={StaticResource Eq}, ConverterParameter=Competitive}" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="cs2p" Content="Balanced" IsChecked="{Binding Profile, Converter={StaticResource Eq}, ConverterParameter=Balanced}" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="cs2p" Content="Quality" IsChecked="{Binding Profile, Converter={StaticResource Eq}, ConverterParameter=Quality}" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="cs2p" Content="Laptop" IsChecked="{Binding Profile, Converter={StaticResource Eq}, ConverterParameter=Laptop}" />
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="{c:Tr 'Стартовая точка для настроек видео в игре, подобранная по вашей видеокарте. Эффект проверяйте замером FPS/frametime (раздел «Отчёты»).', 'A starting point for in-game video settings based on your GPU. Verify the effect with FPS/frametime logs (Reports).'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Bottom12}" />
+                        <ItemsControl ItemsSource="{Binding Recommendations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type steam:Cs2Recommendation}">
+                                    <Grid Margin="{StaticResource Gap.Bottom8}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="0.55*" />
+                                            <ColumnDefinition Width="0.45*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="{StaticResource Gap.Right8}">
+                                            <TextBlock Text="{Binding Setting}" Style="{StaticResource Text.Body}" />
+                                            <TextBlock Text="{Binding Why}" Style="{StaticResource Text.Caption}" Visibility="{Binding Why, Converter={StaticResource NullToVis}}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.AccentText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </c:GlassPanel>
+            </Grid>
+
+            <!-- Конфиг и параметры запуска -->
+            <c:GlassPanel Margin="{StaticResource Gap.Top16}" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Конфиг novatune.cfg', 'novatune.cfg config'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}"
+                               Text="{c:Tr 'Создаёт файл game\\csgo\\cfg\\novatune.cfg с ограничением FPS. Графические настройки CS2 хранит сама — их меняйте в игре. Перед записью создаётся бэкап.', 'Creates game\\csgo\\cfg\\novatune.cfg with a frame cap. CS2 stores graphics settings itself — change them in-game. A backup is made before writing.'}" />
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                        <TextBlock Text="fps_max" Style="{StaticResource Text.Body}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right8}" />
+                        <TextBox Text="{Binding FpsMax, UpdateSourceTrigger=PropertyChanged}" Width="90" Margin="{StaticResource Gap.Right8}" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding CreateConfigCommand}" c:Ui.Icon="{StaticResource Icon.Check}" Content="{c:Tr 'Создать конфиг', 'Create config'}" Margin="{StaticResource Gap.Right8}" />
+                        <Button Command="{Binding CopyExecCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="+exec novatune" />
+                    </StackPanel>
+                    <Border Background="{DynamicResource Brush.WarningSoft}" CornerRadius="10" Padding="12,8" Margin="{StaticResource Gap.Top12}">
+                        <TextBlock Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.Text}"
+                                   Text="{c:Tr 'Параметры запуска NOVA TUNE не меняет: вставьте их в Steam сами. Если править localconfig.vdf вручную — сначала закройте Steam, иначе он перезапишет файл. VAC и античит не затрагиваются.', 'NOVA TUNE does not change launch options: paste them in Steam yourself. If you edit localconfig.vdf manually, close Steam first or it will overwrite the file. VAC and anti-cheat are not touched.'}" />
+                    </Border>
+
+                    <TextBlock Text="{c:Tr 'Аккаунты Steam с CS2', 'Steam accounts with CS2'}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Top24}" />
+                    <ItemsControl ItemsSource="{Binding Accounts}" Margin="{StaticResource Gap.Top8}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:AccountRow}">
+                                <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,10" Margin="{StaticResource Gap.Item}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource Text.Body}"><Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" · " /><Run Text="{Binding Files, Mode=OneWay}" /></TextBlock>
+                                        <TextBlock Text="{Binding ConfigDir}" Style="{StaticResource Text.Mono}" />
+                                        <TextBlock Style="{StaticResource Text.Caption}"><Run Text="{c:Tr 'Параметры запуска:', 'Launch options:'}" /> <Run Text="{Binding LaunchOptions, Mode=OneWay}" /></TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{c:Tr 'Популярные параметры запуска — что они делают на самом деле', 'Popular launch options — what they actually do'}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Top16}" />
+                    <ItemsControl ItemsSource="{Binding LaunchNotes}" Margin="{StaticResource Gap.Top8}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:NoteRow}">
+                                <Grid Margin="{StaticResource Gap.Bottom8}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Option}" Style="{StaticResource Text.Mono}" FontSize="13" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Explanation}" Style="{StaticResource Text.Secondary}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </c:GlassPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,91 @@
+<UserControl x:Class="NovaTune.App.Views.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:bk="clr-namespace:NovaTune.Core.Backup;assembly=NovaTune.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Pad.Page}">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="0,4,0,16" />
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Экспорт отчёта', 'Export report'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="{c:Tr 'Характеристики, оценка состояния, диагностика Windows, журнал операций и сравнение FPS (если загружены оба лога).', 'Specifications, health score, Windows diagnostics, operation log and FPS comparison (if both logs are loaded).'}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                        <Button Command="{Binding ExportTxtCommand}" c:Ui.Icon="{StaticResource Icon.Download}" Content="TXT" Margin="{StaticResource Gap.Right8}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding ExportHtmlCommand}" c:Ui.Icon="{StaticResource Icon.Download}" Content="HTML" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                        <ContentControl Style="{StaticResource Spinner}" Margin="12,0,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Сравнение FPS «до / после»', 'FPS comparison before / after'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="{c:Tr 'Загрузите CSV-логи PresentMon или CapFrameX, записанные в одинаковой сцене. Только так можно честно судить об эффекте оптимизации.', 'Load PresentMon or CapFrameX CSV logs recorded in the same scene. This is the only honest way to judge an optimization.'}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                    <Grid Margin="{StaticResource Gap.Top12}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Button Command="{Binding PickBeforeCommand}" c:Ui.Icon="{StaticResource Icon.Upload}" Content="{c:Tr 'Лог «до»', 'Before log'}" Margin="0,0,12,8" MinWidth="140" />
+                        <TextBlock Grid.Column="1" Text="{Binding BeforeText}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="{StaticResource Gap.Bottom8}" />
+                        <Button Grid.Row="1" Command="{Binding PickAfterCommand}" c:Ui.Icon="{StaticResource Icon.Upload}" Content="{c:Tr 'Лог «после»', 'After log'}" Margin="0,0,12,8" MinWidth="140" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AfterText}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="{StaticResource Gap.Bottom8}" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Comparison}" Margin="{StaticResource Gap.Top8}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="{StaticResource Gap.Bottom8}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="260" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Key}" Style="{StaticResource Text.Secondary}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Value}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel>
+                <StackPanel>
+                    <TextBlock Text="{c:Tr 'Журнал операций', 'Operation log'}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
+                    <TextBlock Text="{c:Tr 'Операций пока не было.', 'No operations yet.'}" Style="{StaticResource Text.Secondary}" Visibility="{Binding Journal.Count, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
+                    <ItemsControl ItemsSource="{Binding Journal}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type bk:JournalEntry}">
+                                <Grid Margin="{StaticResource Gap.Bottom8}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="54" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Time, StringFormat={}{0:g}}" Style="{StaticResource Text.Caption}" />
+                                    <TextBlock x:Name="Ok" Grid.Column="1" Text="OK" Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Success}" />
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" />
+                                        <TextBlock Text="{Binding Details}" Style="{StaticResource Text.Caption}" Visibility="{Binding Details, Converter={StaticResource NullToVis}}" />
+                                    </StackPanel>
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Success}" Value="False">
+                                        <Setter TargetName="Ok" Property="Text" Value="FAIL" />
+                                        <Setter TargetName="Ok" Property="Foreground" Value="{DynamicResource Brush.Error}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </c:GlassPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -9,6 +9,7 @@
     <conv:LevelToIconConverter x:Key="LevelToIcon" />
     <conv:PercentWidthConverter x:Key="PercentWidth" />
     <conv:InverseBoolConverter x:Key="Not" />
+    <conv:EqualsConverter x:Key="Eq" />
 
     <!-- ═════════════ Типографика ═════════════ -->
     <Style x:Key="Text.Display" TargetType="TextBlock">

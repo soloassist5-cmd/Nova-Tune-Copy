@@ -102,3 +102,16 @@ public sealed class InverseBoolConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
 }
+
+/// <summary>Строковое значение равно параметру → Visible (для вкладок). Для IsChecked возвращает bool.</summary>
+public sealed class EqualsConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var equal = string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.Ordinal);
+        return targetType == typeof(Visibility) ? (equal ? Visibility.Visible : Visibility.Collapsed) : equal;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is true ? parameter : Binding.DoNothing;
+}
