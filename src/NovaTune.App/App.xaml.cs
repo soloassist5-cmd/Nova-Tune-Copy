@@ -90,8 +90,19 @@ public partial class App : Application
 
         _log.Info($"Запуск NOVA TUNE {typeof(App).Assembly.GetName().Version}, Windows {OsInfo.Current.FullBuild}, администратор: {OsInfo.IsElevated()}");
 
-        var vm = new MainViewModel();
-        var window = new MainWindow(vm);
+        MainViewModel vm;
+        MainWindow window;
+        try
+        {
+            vm = new MainViewModel();
+            window = new MainWindow(vm);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            FailStartup(ex);
+            return;
+        }
+
         if (ArgValue(args, "--size") is { } size && size.Split('x') is [var w, var h]
             && double.TryParse(w, CultureInfo.InvariantCulture, out var width) && double.TryParse(h, CultureInfo.InvariantCulture, out var height))
         {
@@ -100,8 +111,17 @@ public partial class App : Application
         }
 
         MainWindow = window;
-        window.Show();
-        vm.Navigate("dashboard");
+        try
+        {
+            window.Show();
+            vm.Navigate("dashboard");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            FailStartup(ex);
+            return;
+        }
+
         StartActivationListener(window);
 
         if (screenshotDir is not null)
@@ -111,6 +131,24 @@ public partial class App : Application
         }
 
         window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _ = CheckInterruptedOperationsAsync(vm));
+    }
+
+    /// <summary>
+    /// Ошибка при создании окна: показываем сообщение и полностью завершаем процесс.
+    /// Иначе процесс остался бы висеть без окна, удерживая Mutex, и повторный запуск «ничего бы не делал».
+    /// </summary>
+    private void FailStartup(Exception ex)
+    {
+        _log?.Error("Не удалось открыть главное окно", ex);
+        MessageBox.Show(
+            Loc.T("NOVA TUNE не смог открыть окно и будет закрыт.\n\n", "NOVA TUNE could not open its window and will close.\n\n") + ex.Message
+            + (ex.InnerException is null ? "" : "\n" + ex.InnerException.Message)
+            + Loc.T("\n\nЖурнал: ", "\n\nLog: ") + AppPaths.Default().Logs,
+            "NOVA TUNE",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        ReleaseSingleInstance();
+        Shutdown(1);
     }
 
     public static void ApplyLanguage(AppLanguage language)
@@ -205,6 +243,12 @@ public partial class App : Application
         {
             _log?.Error("Необработанное исключение в UI", e.Exception);
             e.Handled = true;
+            if (MainWindow is not { IsLoaded: true })
+            {
+                FailStartup(e.Exception);
+                return;
+            }
+
             ShowCrashMessage(e.Exception);
         };
         TaskScheduler.UnobservedTaskException += (_, e) =>

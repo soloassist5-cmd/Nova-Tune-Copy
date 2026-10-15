@@ -1,0 +1,75 @@
+# Сборка и проверка на настоящей Windows: тесты, публикация EXE, запуск приложения
+# в режимах --self-test (чтение данных) и --screenshot (обход страниц), вывод журнала приложения.
+name: build-windows
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Unit tests
+        run: dotnet test tests/NovaTune.Core.Tests -c Release
+
+      - name: Publish EXE
+        run: dotnet publish src/NovaTune.App -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -o out
+
+      - name: Self-test (read-only)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out\NOVA-TUNE.exe -ArgumentList '--self-test', "$pwd\selftest.txt" -PassThru
+          if (-not $p.WaitForExit(180000)) { $p.Kill(); Write-Host "SELFTEST TIMEOUT" }
+          Write-Host "Exit code: $($p.ExitCode)"
+          if (Test-Path selftest.txt) { Get-Content selftest.txt }
+
+      - name: Launch UI and capture pages
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out\NOVA-TUNE.exe -ArgumentList '--screenshot', "$pwd\shots", '--size', '1280x800' -PassThru
+          if (-not $p.WaitForExit(240000)) { $p.Kill(); Write-Host "UI TIMEOUT" }
+          Write-Host "Exit code: $($p.ExitCode)"
+          Get-ChildItem shots -ErrorAction SilentlyContinue
+
+      - name: App log
+        if: always()
+        shell: pwsh
+        run: Get-Content "$env:LOCALAPPDATA\NovaTune\logs\novatune.log" -ErrorAction SilentlyContinue
+
+      - name: Screenshots as base64 (for review from logs)
+        if: always()
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          foreach ($f in Get-ChildItem shots\*.png -ErrorAction SilentlyContinue) {
+            $img = [System.Drawing.Image]::FromFile($f.FullName)
+            $w = 960; $h = [int]($img.Height * $w / $img.Width)
+            $bmp = New-Object System.Drawing.Bitmap $img, $w, $h
+            $ms = New-Object System.IO.MemoryStream
+            $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+            $ep = New-Object System.Drawing.Imaging.EncoderParameters 1
+            $ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality), 72L
+            $bmp.Save($ms, $codec, $ep)
+            Write-Host "BEGIN-SHOT $($f.Name)"
+            $b64 = [Convert]::ToBase64String($ms.ToArray())
+            for ($i = 0; $i -lt $b64.Length; $i += 4000) { Write-Host $b64.Substring($i, [Math]::Min(4000, $b64.Length - $i)) }
+            Write-Host "END-SHOT"
+          }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: NOVA-TUNE
+          path: |
+            out/NOVA-TUNE.exe
+            shots/
+            selftest.txt
