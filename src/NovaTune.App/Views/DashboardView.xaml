@@ -124,23 +124,20 @@
                             <TextBlock Text="{c:Tr 'Процессор', 'Processor'}" Style="{StaticResource Text.Label}" />
                         </StackPanel>
                         <TextBlock Text="{Binding CpuName}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="{StaticResource Gap.Top4}" ToolTip="{Binding CpuName}" />
-                        <Grid Margin="{StaticResource Gap.Top12}">
+                        <TextBlock Text="{Binding CpuLoad}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top12}" />
+                        <TextBlock Text="{c:Tr 'загрузка', 'load'}" Style="{StaticResource Text.Caption}" />
+                        <Grid Margin="{StaticResource Gap.Top8}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="{Binding CpuLoad}" Style="{StaticResource Text.Value}" />
-                                <TextBlock Text="{c:Tr 'загрузка', 'load'}" Style="{StaticResource Text.Caption}" />
+                                <TextBlock Text="{Binding CpuClock}" Style="{StaticResource Text.Subtitle}" />
+                                <TextBlock Text="{c:Tr 'частота', 'clock'}" Style="{StaticResource Text.Caption}" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="{Binding CpuClock}" Style="{StaticResource Text.Value}" FontSize="20" Margin="0,5,0,0" />
-                                <TextBlock Text="{c:Tr 'частота', 'clock'}" Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" ToolTip="{Binding CpuTempReason}">
-                                <TextBlock Text="{Binding CpuTemp}" Style="{StaticResource Text.Value}" FontSize="20" Margin="0,5,0,0" />
-                                <TextBlock Text="{c:Tr 'температура', 'temperature'}" Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
+                            <StackPanel Grid.Column="1" ToolTip="{Binding CpuTempReason}">
+                                <TextBlock Text="{Binding CpuTemp}" Style="{StaticResource Text.Subtitle}" />
+                                <TextBlock Text="{c:Tr 'температура', 'temperature'}" Style="{StaticResource Text.Caption}" />
                             </StackPanel>
                         </Grid>
                         <TextBlock Text="{Binding CpuTempReason, StringFormat='ⓘ {0}'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}"
@@ -243,12 +240,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Text="{c:Tr 'Автозагрузка', 'Startup'}" Style="{StaticResource Text.Label}" />
-                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top8}">
-                                <TextBlock Text="{Binding StartupEnabled}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Right12}" />
-                                <TextBlock Text="{Binding StartupDetail}" Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="0,0,0,5" />
-                            </StackPanel>
+                            <TextBlock Text="{Binding StartupEnabled}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Top8}" />
+                            <TextBlock Text="{Binding StartupDetail}" Style="{StaticResource Text.Caption}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Style="{StaticResource Button.Ghost}" VerticalAlignment="Center" Command="{Binding OpenCommand}" CommandParameter="startup"
+                        <Button Grid.Column="1" Style="{StaticResource Button.Ghost}" VerticalAlignment="Center" Command="{Binding OpenCommand}" CommandParameter="startup" Visibility="{Binding Main.HasStartup, Converter={StaticResource BoolToVis}}"
                                 c:Ui.Icon="{StaticResource Icon.ChevronRight}" Content="{c:Tr 'Открыть', 'Open'}" />
                     </Grid>
                 </c:GlassPanel>
@@ -265,7 +260,7 @@
                             <TextBlock Text="{c:Tr 'Безопасные изменения с бэкапом и откатом. Ничего не применяется без предпросмотра и подтверждения.', 'Safe changes with backup and rollback. Nothing is applied without preview and confirmation.'}"
                                        Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0" Visibility="{Binding Main.HasOptimize, Converter={StaticResource BoolToVis}}">
                             <Button Command="{Binding OpenCommand}" CommandParameter="cs2" c:Ui.Icon="{StaticResource Icon.Crosshair}" Content="CS2" Margin="{StaticResource Gap.Right8}" />
                             <Button Style="{StaticResource Button.Primary}" Command="{Binding OpenCommand}" CommandParameter="optimize" c:Ui.Icon="{StaticResource Icon.Bolt}" Content="{c:Tr 'Оптимизация', 'Optimize'}" />
                         </StackPanel>

@@ -64,6 +64,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<NavItem> Items { get; }
 
+    /// <summary>Разделы, доступные в этой сборке: кнопки перехода в недоступные разделы скрываются.</summary>
+    public bool HasStartup => Items.Any(i => i.Key == "startup");
+
+    public bool HasOptimize => Items.Any(i => i.Key == "optimize");
+
     public DialogService Dialogs => AppServices.Current.Dialogs;
 
     public ToastService Toasts => AppServices.Current.Toasts;
