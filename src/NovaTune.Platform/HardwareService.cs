@@ -233,8 +233,15 @@ public sealed class HardwareService(StorageService storage, ILog log)
         return new HardwareReport(summary, sections, DateTimeOffset.Now);
     }
 
-    private static string? FormatSpeeds(int? configured, int? rated) =>
-        configured is null && rated is null ? null : $"{configured?.ToString(CultureInfo.InvariantCulture) ?? "?"} / {rated?.ToString(CultureInfo.InvariantCulture) ?? "?"} MT/s";
+    /// <summary>0 в WMI означает «не сообщено» (типично для виртуальных машин) — такие значения не показываем.</summary>
+    private static string? FormatSpeeds(int? configured, int? rated)
+    {
+        configured = configured is > 0 ? configured : null;
+        rated = rated is > 0 ? rated : null;
+        return configured is null && rated is null
+            ? null
+            : $"{configured?.ToString(CultureInfo.InvariantCulture) ?? "?"} / {rated?.ToString(CultureInfo.InvariantCulture) ?? "?"} MT/s";
+    }
 
     private static string? MemoryTypeName(int? smbios) => smbios switch
     {
