@@ -1,0 +1,10 @@
+bin/
+obj/
+release/
+publish/
+*.user
+.vs/
+.vscode/
+TestResults/
+*.binlog
+artifacts/

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Platform-independent logic: models, backup/transactions, VDF, cleanup engine, analysis.
+       Has no Windows dependencies so it can be unit-tested anywhere. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>NovaTune.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="NovaTune.Core.Tests" />
+  </ItemGroup>
+</Project>
