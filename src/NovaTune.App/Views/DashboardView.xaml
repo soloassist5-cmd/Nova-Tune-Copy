@@ -1,0 +1,277 @@
+<UserControl x:Class="NovaTune.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels"
+             xmlns:analysis="clr-namespace:NovaTune.Core.Analysis;assembly=NovaTune.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource Pad.Page}">
+
+            <!-- Заголовок -->
+            <Grid Margin="{StaticResource Gap.Bottom16}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                    <TextBlock Text="{Binding OsLine}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel VerticalAlignment="Center" Margin="{StaticResource Gap.Right16}">
+                        <TextBlock Style="{StaticResource Text.Caption}" HorizontalAlignment="Right">
+                            <Run Text="{c:Tr 'Последнее сканирование:', 'Last scan:'}" /> <Run Text="{Binding LastScanText}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding ProfileText}" Style="{StaticResource Text.Caption}" HorizontalAlignment="Right" />
+                    </StackPanel>
+                    <Button Style="{StaticResource Button.Primary}" Command="{Binding DiagnoseCommand}" c:Ui.Icon="{StaticResource Icon.Scan}"
+                            Content="{c:Tr 'Диагностика', 'Diagnose'}" IsEnabled="{Binding IsScanning, Converter={StaticResource Not}}" />
+                </StackPanel>
+            </Grid>
+
+            <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.ErrorSoft}" HorizontalAlignment="Left" Margin="{StaticResource Gap.Bottom16}"
+                    Visibility="{Binding ErrorText, Converter={StaticResource NullToVis}}">
+                <TextBlock Text="{Binding ErrorText}" Style="{StaticResource ChipText}" Foreground="{DynamicResource Brush.Error}" />
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.15*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Оценка состояния -->
+                <c:GlassPanel Grid.RowSpan="3">
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Состояние системы', 'System health'}" Style="{StaticResource Text.Label}" />
+                        <Grid Margin="0,16,0,8" HorizontalAlignment="Center">
+                            <c:RingGauge Width="148" Height="148" Value="{Binding Score}" Thickness="11"
+                                         TrackBrush="{DynamicResource Brush.Track}" FillBrush="{DynamicResource Brush.AccentGradient}" />
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding Score}" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"
+                                           Visibility="{Binding HasHealth, Converter={StaticResource BoolToVis}}" />
+                                <ContentControl Style="{StaticResource Spinner}" Width="28" Height="28"
+                                                Visibility="{Binding HasHealth, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                                <TextBlock Text="/ 100" Style="{StaticResource Text.Caption}" HorizontalAlignment="Center"
+                                           Visibility="{Binding HasHealth, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="{Binding StatusText}" Style="{StaticResource Text.Subtitle}" HorizontalAlignment="Center" TextAlignment="Center"
+                                   Foreground="{Binding StatusLevel, Converter={StaticResource LevelToBrush}}" />
+                        <Border Style="{StaticResource Divider}" />
+                        <Expander Style="{StaticResource Disclosure}" Header="{c:Tr 'Из чего сложилась оценка', 'How the score is calculated'}"
+                                  Visibility="{Binding HasHealth, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{Binding Criteria}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type analysis:HealthCriterion}">
+                                            <Grid Margin="{StaticResource Gap.Bottom12}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Viewbox Width="14" Height="14" VerticalAlignment="Top" Margin="0,3,10,0">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="{Binding Level, Converter={StaticResource LevelToIcon}}" Style="{StaticResource IconPath}" StrokeThickness="2.6"
+                                                              Stroke="{Binding Level, Converter={StaticResource LevelToBrush}}" />
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource Text.Caption}" />
+                                                    <TextBlock Text="{Binding Recommendation}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.AccentText}"
+                                                               Visibility="{Binding Recommendation, Converter={StaticResource NullToVis}}" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2" Style="{StaticResource Text.Caption}" Margin="8,2,0,0">
+                                                    <Run Text="{Binding Earned, Mode=OneWay}" /><Run Text="/" /><Run Text="{Binding Max, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="{c:Tr 'Не учтено (нет данных):', 'Not evaluated (no data):'}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
+                                           Visibility="{Binding NotEvaluated.Count, Converter={StaticResource NullToVis}}" />
+                                <ItemsControl ItemsSource="{Binding NotEvaluated}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat='• {0}'}" Style="{StaticResource Text.Caption}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- CPU -->
+                <c:GlassPanel Grid.Column="2">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="16" Height="16" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Cpu}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.ChartCpu}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{c:Tr 'Процессор', 'Processor'}" Style="{StaticResource Text.Label}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding CpuName}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="{StaticResource Gap.Top4}" ToolTip="{Binding CpuName}" />
+                        <Grid Margin="{StaticResource Gap.Top12}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding CpuLoad}" Style="{StaticResource Text.Value}" />
+                                <TextBlock Text="{c:Tr 'загрузка', 'load'}" Style="{StaticResource Text.Caption}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding CpuClock}" Style="{StaticResource Text.Value}" FontSize="20" Margin="0,5,0,0" />
+                                <TextBlock Text="{c:Tr 'частота', 'clock'}" Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" ToolTip="{Binding CpuTempReason}">
+                                <TextBlock Text="{Binding CpuTemp}" Style="{StaticResource Text.Value}" FontSize="20" Margin="0,5,0,0" />
+                                <TextBlock Text="{c:Tr 'температура', 'temperature'}" Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="{Binding CpuTempReason, StringFormat='ⓘ {0}'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}"
+                                   Visibility="{Binding CpuTempReason, Converter={StaticResource NullToVis}}" />
+                        <c:SparkChart Height="56" Margin="{StaticResource Gap.Top12}" Values="{Binding CpuHistory}" Capacity="90"
+                                      Stroke="{DynamicResource Brush.ChartCpu}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- GPU -->
+                <c:GlassPanel Grid.Column="4">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="16" Height="16" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Gpu}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.ChartGpu}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{c:Tr 'Видеокарта', 'Graphics'}" Style="{StaticResource Text.Label}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding GpuName}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="{StaticResource Gap.Top4}" ToolTip="{Binding GpuName}" />
+                        <Grid Margin="{StaticResource Gap.Top12}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel ToolTip="{Binding GpuLoadReason}">
+                                <TextBlock Text="{Binding GpuLoad}" Style="{StaticResource Text.Value}" />
+                                <TextBlock Text="{c:Tr 'загрузка', 'load'}" Style="{StaticResource Text.Caption}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" ToolTip="{Binding GpuTempReason}">
+                                <TextBlock Text="{Binding GpuTemp}" Style="{StaticResource Text.Value}" />
+                                <TextBlock Text="{c:Tr 'температура', 'temperature'}" Style="{StaticResource Text.Caption}" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="{Binding GpuTempReason, StringFormat='ⓘ {0}'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}"
+                                   Visibility="{Binding GpuTempReason, Converter={StaticResource NullToVis}}" />
+                        <c:SparkChart Height="56" Margin="{StaticResource Gap.Top12}" Values="{Binding GpuHistory}" Capacity="90"
+                                      Stroke="{DynamicResource Brush.ChartGpu}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- RAM -->
+                <c:GlassPanel Grid.Column="2" Grid.Row="2">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="16" Height="16" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Memory}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.ChartRam}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{c:Tr 'Оперативная память', 'Memory'}" Style="{StaticResource Text.Label}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                            <TextBlock Text="{Binding RamPercent}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Right12}" />
+                            <TextBlock Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="0,0,0,5">
+                                <Run Text="{Binding RamUsed, Mode=OneWay}" /> <Run Text="{Binding RamTotal, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                        <c:SparkChart Height="56" Margin="{StaticResource Gap.Top12}" Values="{Binding RamHistory}" Capacity="90"
+                                      Stroke="{DynamicResource Brush.ChartRam}" GridBrush="{DynamicResource Brush.ChartGrid}" />
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- Системный диск -->
+                <c:GlassPanel Grid.Column="4" Grid.Row="2">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="16" Height="16" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Disk}" Style="{StaticResource IconPath}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{Binding DiskTitle}" Style="{StaticResource Text.Label}" />
+                            <Border Style="{StaticResource Chip}" Margin="8,0,0,0" Padding="7,1" Visibility="{Binding DiskType, Converter={StaticResource NullToVis}}">
+                                <TextBlock Text="{Binding DiskType}" Style="{StaticResource ChipText}" FontSize="10.5" />
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                            <TextBlock Text="{Binding DiskFree}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Right12}" />
+                            <TextBlock Text="{Binding DiskDetail}" Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="0,0,0,5" />
+                        </StackPanel>
+                        <Grid x:Name="DiskBar" Height="8" Margin="0,22,0,0">
+                            <Border CornerRadius="4" Background="{DynamicResource Brush.Track}" />
+                            <Border CornerRadius="4" Background="{DynamicResource Brush.AccentGradient}" HorizontalAlignment="Left">
+                                <Border.Width>
+                                    <MultiBinding Converter="{StaticResource PercentWidth}">
+                                        <Binding Path="DiskUsedPercent" />
+                                        <Binding Path="ActualWidth" ElementName="DiskBar" />
+                                    </MultiBinding>
+                                </Border.Width>
+                            </Border>
+                        </Grid>
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}">
+                            <Run Text="{c:Tr 'Занято', 'Used'}" /> <Run Text="{Binding DiskUsedPercent, StringFormat={}{0:0}%, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </c:GlassPanel>
+
+                <!-- Автозагрузка -->
+                <c:GlassPanel Grid.Row="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{c:Tr 'Автозагрузка', 'Startup'}" Style="{StaticResource Text.Label}" />
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top8}">
+                                <TextBlock Text="{Binding StartupEnabled}" Style="{StaticResource Text.Value}" Margin="{StaticResource Gap.Right12}" />
+                                <TextBlock Text="{Binding StartupDetail}" Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="0,0,0,5" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource Button.Ghost}" VerticalAlignment="Center" Command="{Binding OpenCommand}" CommandParameter="startup"
+                                c:Ui.Icon="{StaticResource Icon.ChevronRight}" Content="{c:Tr 'Открыть', 'Open'}" />
+                    </Grid>
+                </c:GlassPanel>
+
+                <!-- Быстрые действия -->
+                <c:GlassPanel Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:Tr 'Подготовка к игре', 'Get ready to play'}" Style="{StaticResource Text.Subtitle}" />
+                            <TextBlock Text="{c:Tr 'Безопасные изменения с бэкапом и откатом. Ничего не применяется без предпросмотра и подтверждения.', 'Safe changes with backup and rollback. Nothing is applied without preview and confirmation.'}"
+                                       Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                            <Button Command="{Binding OpenCommand}" CommandParameter="cs2" c:Ui.Icon="{StaticResource Icon.Crosshair}" Content="CS2" Margin="{StaticResource Gap.Right8}" />
+                            <Button Style="{StaticResource Button.Primary}" Command="{Binding OpenCommand}" CommandParameter="optimize" c:Ui.Icon="{StaticResource Icon.Bolt}" Content="{c:Tr 'Оптимизация', 'Optimize'}" />
+                        </StackPanel>
+                    </Grid>
+                </c:GlassPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

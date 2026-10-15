@@ -1,12 +1,211 @@
-﻿<Window x:Class="NovaTune.App.MainWindow"
+<Window x:Class="NovaTune.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NovaTune.App"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        xmlns:c="clr-namespace:NovaTune.App.Controls"
+        xmlns:vm="clr-namespace:NovaTune.App.ViewModels"
+        xmlns:v="clr-namespace:NovaTune.App.Views"
+        xmlns:s="clr-namespace:NovaTune.App.Services"
+        Title="NOVA TUNE" Width="1280" Height="820" MinWidth="1024" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Brush.WindowBg}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="{StaticResource Font.Ui}" FontSize="14"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Icon="Assets/novatune.ico">
 
+    <!-- Свой заголовок окна. Стандартная рамка сохраняется (WindowStyle по умолчанию),
+         поэтому работают Aero Snap, двойной клик по заголовку и анимации Windows. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><v:DashboardView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MyPcViewModel}"><v:MyPcView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MonitoringViewModel}"><v:MonitoringView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OptimizeViewModel}"><v:OptimizeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:Cs2ViewModel}"><v:Cs2View /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:GameCenterViewModel}"><v:GameCenterView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StartupViewModel}"><v:StartupView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CleanupViewModel}"><v:CleanupView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BackupViewModel}"><v:BackupView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><v:ReportsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
+    </Window.Resources>
+
+    <Grid x:Name="Root">
+        <!-- Фон: графитовый градиент + мягкие цветные пятна + лёгкий шум. Статичный слой, без живого размытия. -->
+        <Grid IsHitTestVisible="False" ClipToBounds="True">
+            <Ellipse Width="980" Height="980" Fill="{DynamicResource Brush.Blob1}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-260,-460,0,0" />
+            <Ellipse Width="860" Height="860" Fill="{DynamicResource Brush.Blob2}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-260,-300,0" />
+            <Ellipse Width="760" Height="760" Fill="{DynamicResource Brush.Blob3}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="200,0,0,-480" />
+            <Rectangle Fill="{DynamicResource Brush.Noise}" />
+        </Grid>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="228" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Боковая панель -->
+            <Border Grid.RowSpan="2" Background="{DynamicResource Brush.GlassSidebar}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="20,18,16,22">
+                        <Image Source="Assets/novatune-64.png" Width="30" Height="30" RenderOptions.BitmapScalingMode="HighQuality" />
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="NOVA TUNE" FontFamily="{StaticResource Font.Display}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                            <TextBlock Text="{c:Tr 'игровой оптимизатор', 'game-ready PC'}" FontSize="11" Foreground="{DynamicResource Brush.TextTertiary}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom" Margin="20,8,16,18">
+                        <Border Style="{StaticResource Chip}" HorizontalAlignment="Left" Margin="{StaticResource Gap.Bottom8}"
+                                Background="{DynamicResource Brush.WarningSoft}" Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{c:Tr 'Права администратора', 'Administrator'}" Style="{StaticResource ChipText}" Foreground="{DynamicResource Brush.Warning}" />
+                        </Border>
+                        <TextBlock Style="{StaticResource Text.Caption}">
+                            <Run Text="{Binding DeviceName, Mode=OneWay}" /><Run Text=" · v" /><Run Text="{Binding Version, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" ItemContainerStyle="{StaticResource NavItem}"
+                             Background="Transparent" BorderThickness="0" Margin="10,0" Padding="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
+                        <ListBox.Template>
+                            <ControlTemplate TargetType="ListBox">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ListBox.Template>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:NavItem}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Viewbox Width="18" Height="18" Margin="0,0,12,0">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{Binding Icon}" Style="{StaticResource IconPath}"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding Title}" FontSize="13.5" VerticalAlignment="Center"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Кнопки окна -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Button Style="{StaticResource Button.Caption}" Click="OnMinimize" c:Ui.Icon="{StaticResource Icon.Minimize}" ToolTip="{c:Tr 'Свернуть', 'Minimize'}" />
+                <Button x:Name="MaxButton" Style="{StaticResource Button.Caption}" Click="OnMaximize" c:Ui.Icon="{StaticResource Icon.Maximize}" ToolTip="{c:Tr 'Развернуть', 'Maximize'}" />
+                <Button Style="{StaticResource Button.CaptionClose}" Click="OnClose" c:Ui.Icon="{StaticResource Icon.Close}" ToolTip="{c:Tr 'Закрыть', 'Close'}" />
+            </StackPanel>
+
+            <!-- Содержимое страницы -->
+            <ContentControl x:Name="PageHost" Grid.Column="1" Grid.Row="1" Content="{Binding CurrentPage}" Focusable="False">
+                <ContentControl.RenderTransform>
+                    <TranslateTransform x:Name="PageShift" />
+                </ContentControl.RenderTransform>
+            </ContentControl>
+        </Grid>
+
+        <!-- Уведомления -->
+        <ItemsControl ItemsSource="{Binding Toasts.Items}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,24" Width="360">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type s:ToastItem}">
+                    <c:GlassPanel Padding="16,12" Margin="0,8,0,0" CornerRadius="14">
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="16" Height="16" Margin="0,1,10,0" VerticalAlignment="Top">
+                                <Canvas Width="24" Height="24">
+                                    <Path x:Name="ToastIcon" Data="{StaticResource Icon.Info}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" />
+                                </Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{Binding Text}" Style="{StaticResource Text.Body}" MaxWidth="290" />
+                        </StackPanel>
+                    </c:GlassPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Kind}" Value="Success">
+                            <Setter TargetName="ToastIcon" Property="Data" Value="{StaticResource Icon.Check}" />
+                            <Setter TargetName="ToastIcon" Property="Stroke" Value="{DynamicResource Brush.Success}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Kind}" Value="Warning">
+                            <Setter TargetName="ToastIcon" Property="Data" Value="{StaticResource Icon.Warning}" />
+                            <Setter TargetName="ToastIcon" Property="Stroke" Value="{DynamicResource Brush.Warning}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Kind}" Value="Error">
+                            <Setter TargetName="ToastIcon" Property="Data" Value="{StaticResource Icon.Error}" />
+                            <Setter TargetName="ToastIcon" Property="Stroke" Value="{DynamicResource Brush.Error}" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Модальный диалог -->
+        <Grid x:Name="DialogLayer" Visibility="{Binding Dialogs.Current, Converter={StaticResource NullToVis}}">
+            <Rectangle Fill="{DynamicResource Brush.Overlay}" />
+            <c:GlassPanel x:Name="DialogPanel" DataContext="{Binding Dialogs.Current}" MaxWidth="600" MinWidth="420" Margin="48"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24" CornerRadius="20">
+                <c:GlassPanel.Resources>
+                    <DataTemplate DataType="{x:Type vm:PreviewList}">
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:PreviewRow}">
+                                    <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,10" Margin="{StaticResource Gap.Item}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Target}" Style="{StaticResource Text.Mono}" Margin="{StaticResource Gap.Top4}" />
+                                            <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}">
+                                                <Run Text="{Binding Current, Mode=OneWay}" /><Run Text="  →  " /><Run Text="{Binding New, Mode=OneWay}" Foreground="{DynamicResource Brush.AccentText}" />
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Note}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.Warning}" Margin="{StaticResource Gap.Top4}"
+                                                       Visibility="{Binding Note, Converter={StaticResource NullToVis}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type vm:TextLines}">
+                        <ItemsControl ItemsSource="{Binding Lines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Bottom4}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DataTemplate>
+                </c:GlassPanel.Resources>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="{StaticResource Gap.Bottom12}">
+                        <Viewbox Width="22" Height="22" Margin="0,0,12,0" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path x:Name="DialogIcon" Data="{StaticResource Icon.Info}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Title}" VerticalAlignment="Center" MaxWidth="500" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{StaticResource Gap.Top16}">
+                        <Button Content="{Binding CancelText}" Command="{Binding CancelCommand}" Margin="{StaticResource Gap.Right8}" IsCancel="True"
+                                Visibility="{Binding CancelText, Converter={StaticResource NullToVis}}" />
+                        <Button x:Name="DialogConfirm" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" Style="{StaticResource Button.Primary}" IsDefault="True" />
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="440">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Secondary}" />
+                            <ContentControl Content="{Binding Details}" Margin="{StaticResource Gap.Top12}" Focusable="False"
+                                            Visibility="{Binding Details, Converter={StaticResource NullToVis}}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </c:GlassPanel>
+        </Grid>
     </Grid>
 </Window>

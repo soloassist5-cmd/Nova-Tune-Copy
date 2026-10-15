@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Тёмная тема: глубокий графит, стекло — светлые полупрозрачные слои, холодные акценты. -->
+
+    <Color x:Key="C.Accent">#FF5B8CFF</Color>
+    <Color x:Key="C.Accent2">#FF8E7BFF</Color>
+    <Color x:Key="C.Shadow">#FF000000</Color>
+
+    <!-- Фон окна -->
+    <LinearGradientBrush x:Key="Brush.WindowBg" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF10131A" />
+        <GradientStop Offset="0.55" Color="#FF0C0E13" />
+        <GradientStop Offset="1" Color="#FF0A0B10" />
+    </LinearGradientBrush>
+    <RadialGradientBrush x:Key="Brush.Blob1" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Offset="0" Color="#553B6BFF" />
+        <GradientStop Offset="1" Color="#003B6BFF" />
+    </RadialGradientBrush>
+    <RadialGradientBrush x:Key="Brush.Blob2" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Offset="0" Color="#447A5CFF" />
+        <GradientStop Offset="1" Color="#007A5CFF" />
+    </RadialGradientBrush>
+    <RadialGradientBrush x:Key="Brush.Blob3" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Offset="0" Color="#2E9FB7D4" />
+        <GradientStop Offset="1" Color="#009FB7D4" />
+    </RadialGradientBrush>
+    <SolidColorBrush x:Key="Brush.Noise.Tint" Color="#FFFFFFFF" Opacity="0.035" />
+
+    <!-- Стекло -->
+    <LinearGradientBrush x:Key="Brush.Glass" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#1DFFFFFF" />
+        <GradientStop Offset="1" Color="#0FFFFFFF" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.GlassStrong" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#F2232733" />
+        <GradientStop Offset="1" Color="#F21A1D26" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brush.GlassBase" Color="#66101319" />
+    <SolidColorBrush x:Key="Brush.ShadowFill" Color="#73000000" />
+    <SolidColorBrush x:Key="Brush.GlassSidebar" Color="#0EFFFFFF" />
+    <LinearGradientBrush x:Key="Brush.GlassBorder" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#3DFFFFFF" />
+        <GradientStop Offset="0.4" Color="#17FFFFFF" />
+        <GradientStop Offset="1" Color="#0DFFFFFF" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.GlassHighlight" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Offset="0" Color="#00FFFFFF" />
+        <GradientStop Offset="0.5" Color="#40FFFFFF" />
+        <GradientStop Offset="1" Color="#00FFFFFF" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brush.HoverOverlay" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="Brush.PressedOverlay" Color="#0AFFFFFF" />
+    <SolidColorBrush x:Key="Brush.Divider" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="Brush.Track" Color="#1FFFFFFF" />
+    <SolidColorBrush x:Key="Brush.Overlay" Color="#B3080A0E" />
+    <SolidColorBrush x:Key="Brush.Skeleton" Color="#14FFFFFF" />
+
+    <!-- Текст -->
+    <SolidColorBrush x:Key="Brush.Text" Color="#FFF2F4F8" />
+    <SolidColorBrush x:Key="Brush.TextSecondary" Color="#FFAAB2C3" />
+    <SolidColorBrush x:Key="Brush.TextTertiary" Color="#FF737C8F" />
+    <SolidColorBrush x:Key="Brush.TextOnAccent" Color="#FFFFFFFF" />
+
+    <!-- Акцент -->
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource C.Accent}" />
+    <SolidColorBrush x:Key="Brush.AccentHover" Color="#FF7AA2FF" />
+    <SolidColorBrush x:Key="Brush.AccentSoft" Color="#2E5B8CFF" />
+    <SolidColorBrush x:Key="Brush.AccentText" Color="#FF8FB0FF" />
+    <LinearGradientBrush x:Key="Brush.AccentGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF5B8CFF" />
+        <GradientStop Offset="1" Color="#FF8E7BFF" />
+    </LinearGradientBrush>
+
+    <!-- Состояния -->
+    <SolidColorBrush x:Key="Brush.Success" Color="#FF3ECF8E" />
+    <SolidColorBrush x:Key="Brush.SuccessSoft" Color="#243ECF8E" />
+    <SolidColorBrush x:Key="Brush.Warning" Color="#FFF5B84B" />
+    <SolidColorBrush x:Key="Brush.WarningSoft" Color="#24F5B84B" />
+    <SolidColorBrush x:Key="Brush.Error" Color="#FFFF6B6B" />
+    <SolidColorBrush x:Key="Brush.ErrorSoft" Color="#24FF6B6B" />
+    <SolidColorBrush x:Key="Brush.Unavailable" Color="#FF737C8F" />
+    <SolidColorBrush x:Key="Brush.UnavailableSoft" Color="#1A9AA3B5" />
+
+    <!-- Поля ввода -->
+    <SolidColorBrush x:Key="Brush.Input" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="Brush.InputBorder" Color="#24FFFFFF" />
+    <SolidColorBrush x:Key="Brush.Popup" Color="#FF1C2029" />
+
+    <!-- Графики -->
+    <SolidColorBrush x:Key="Brush.ChartCpu" Color="#FF5B8CFF" />
+    <SolidColorBrush x:Key="Brush.ChartGpu" Color="#FF9A86FF" />
+    <SolidColorBrush x:Key="Brush.ChartRam" Color="#FF7CC8D8" />
+    <SolidColorBrush x:Key="Brush.ChartTemp" Color="#FFF0A275" />
+    <SolidColorBrush x:Key="Brush.ChartGrid" Color="#10FFFFFF" />
+
+    <!-- Кнопки окна -->
+    <SolidColorBrush x:Key="Brush.CloseHover" Color="#FFE5484D" />
+</ResourceDictionary>

@@ -98,7 +98,12 @@ public sealed class MonitoringService : IDisposable
             }
 
             InitCounters();
-            InitLhm(advancedSensors);
+            if (_computer is null || _advanced != advancedSensors)
+            {
+                CloseLhm();
+                InitLhm(advancedSensors);
+            }
+
             _timer = new Timer(_ => Sample(), null, 0, _intervalMs);
         }
     }
@@ -193,6 +198,19 @@ public sealed class MonitoringService : IDisposable
             {
                 AdvancedSensorsReason = Loc.T("LibreHardwareMonitor не смог открыть датчики: ", "LibreHardwareMonitor could not open sensors: ") + ex.Message;
             }
+        }
+    }
+
+    /// <summary>
+    /// Приостановка при уходе со страниц мониторинга: останавливаем таймер и закрываем LibreHardwareMonitor
+    /// (освобождаем драйвер и дескрипторы). История сохраняется, при следующем запуске в графике будет разрыв.
+    /// </summary>
+    public void Suspend()
+    {
+        Stop();
+        lock (_sync)
+        {
+            CloseLhm();
         }
     }
 
