@@ -80,7 +80,7 @@ public sealed partial class ReportsViewModel : PageViewModel
                 diagnostics,
                 S.Journal.ReadRecent(500),
                 _before is not null && _after is not null ? new FrametimeComparison(_before, _after) : null,
-                Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
+                AppInfo.DisplayVersion,
                 DateTimeOffset.Now);
             var text = html ? ReportBuilder.BuildHtml(data) : ReportBuilder.BuildText(data);
             await File.WriteAllTextAsync(dialog.FileName, text, new System.Text.UTF8Encoding(true));
@@ -167,7 +167,7 @@ public sealed partial class SettingsViewModel(MainViewModel main) : PageViewMode
         $"Права администратора: {(OsInfo.IsElevated() ? "да" : "нет")} · драйвер PawnIO: {(MonitoringService.IsPawnIoInstalled() ? "установлен" : "не установлен")}",
         $"Administrator: {(OsInfo.IsElevated() ? "yes" : "no")} · PawnIO driver: {(MonitoringService.IsPawnIoInstalled() ? "installed" : "not installed")}");
 
-    public string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
+    public string Version => AppInfo.DisplayVersion;
 
     public string Runtime => System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription + " · " + OsInfo.Current.Name + " " + OsInfo.Current.FullBuild;
 

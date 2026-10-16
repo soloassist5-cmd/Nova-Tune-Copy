@@ -70,7 +70,7 @@
                             <TextBlock Text="{c:Tr 'Права администратора', 'Administrator'}" Style="{StaticResource ChipText}" Foreground="{DynamicResource Brush.Warning}" />
                         </Border>
                         <TextBlock Style="{StaticResource Text.Caption}">
-                            <Run Text="{Binding DeviceName, Mode=OneWay}" /><Run Text=" · v" /><Run Text="{Binding Version, Mode=OneWay}" />
+                            <Run Text="{Binding DeviceName, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Version, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
 
