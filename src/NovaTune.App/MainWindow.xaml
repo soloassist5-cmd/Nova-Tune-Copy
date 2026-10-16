@@ -32,6 +32,7 @@
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><v:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ToolsViewModel}"><v:ToolsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RecordingViewModel}"><v:RecordingView /></DataTemplate>
     </Window.Resources>
 
     <Grid x:Name="Root">

@@ -80,6 +80,11 @@ public sealed class AppServices : IDisposable
 
     public SessionRecorder Recorder { get; } = new();
 
+    private CaptureController? _capture;
+
+    /// <summary>Запись экрана и оверлей (создаются при первом обращении из UI-потока).</summary>
+    public CaptureController Capture => _capture ??= new CaptureController(this);
+
     /// <summary>Мониторинг создаётся при первом обращении (нужна базовая частота CPU).</summary>
     public MonitoringService Monitoring => _monitoring ??= new MonitoringService(Log, ReadCpuBaseMhz())
     {
@@ -127,6 +132,7 @@ public sealed class AppServices : IDisposable
     public void Dispose()
     {
         Recorder.Stop();
+        _capture?.Dispose();
         _monitoring?.Dispose();
         Http.Dispose();
     }

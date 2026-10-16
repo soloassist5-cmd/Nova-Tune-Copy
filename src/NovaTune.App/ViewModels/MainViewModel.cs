@@ -45,6 +45,7 @@ public sealed partial class MainViewModel : ObservableObject
             new("monitoring", new("Мониторинг", "Monitoring"), "Icon.Pulse", () => new MonitoringViewModel()),
             new("optimize", new("Оптимизация", "Optimize"), "Icon.Sliders", () => new OptimizeViewModel(this)),
             new("games", new("Игры", "Game Center"), "Icon.Gamepad", () => new GameCenterViewModel(this)),
+            new("record", new("Запись", "Capture"), "Icon.Record", () => new RecordingViewModel()),
             new("startup", new("Автозагрузка", "Startup"), "Icon.Power", () => new StartupViewModel()),
             new("cleanup", new("Очистка", "Cleanup"), "Icon.Broom", () => new CleanupViewModel()),
             new("tools", new("Инструменты", "Tools"), "Icon.Tools", () => new ToolsViewModel()),
@@ -90,7 +91,7 @@ public sealed partial class MainViewModel : ObservableObject
         CurrentPage = page;
 
         // Датчики работают только на страницах, которые их показывают; иначе таймер и LibreHardwareMonitor освобождаются.
-        if (page is not IUsesMonitoring && !AppServices.Current.Recorder.IsRecording)
+        if (page is not IUsesMonitoring && !AppServices.Current.Recorder.IsRecording && !AppServices.Current.Capture.NeedsMonitoring)
         {
             AppServices.Current.Monitoring.Suspend();
         }

@@ -32,6 +32,14 @@ jobs:
           Write-Host "Exit code: $($p.ExitCode)"
           if (Test-Path selftest.txt) { Get-Content selftest.txt }
 
+      - name: Screen recording test
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out\NOVA-TUNE.exe -ArgumentList '--record-test', "$pwd\recordtest.txt" -PassThru
+          if (-not $p.WaitForExit(60000)) { $p.Kill(); Write-Host "RECORD TIMEOUT" }
+          Write-Host "Exit code: $($p.ExitCode)"
+          if (Test-Path recordtest.txt) { Get-Content recordtest.txt }
+
       - name: Launch UI and capture pages
         shell: pwsh
         run: |

@@ -48,6 +48,14 @@ public partial class App : Application
             return;
         }
 
+        // ── Проверка записи экрана: 3 секунды основного монитора в MP4 (для CI и диагностики).
+        if (args.Length >= 2 && args[0] == "--record-test")
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            Shutdown(RecordTest.Run(args[1], _log));
+            return;
+        }
+
         var screenshotDir = ArgValue(args, "--screenshot");
 
         // ── Один экземпляр: при повторном запуске активируем уже открытое окно.

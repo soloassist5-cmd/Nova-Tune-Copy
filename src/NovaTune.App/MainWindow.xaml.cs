@@ -25,7 +25,36 @@ public partial class MainWindow : Window
         vm.PropertyChanged += OnViewModelChanged;
         vm.Dialogs.PropertyChanged += OnDialogChanged;
         StateChanged += (_, _) => UpdateMaximizedState();
-        SourceInitialized += (_, _) => ApplyWindows11Frame();
+        SourceInitialized += (_, _) =>
+        {
+            ApplyWindows11Frame();
+            RegisterHotkeys();
+        };
+        Closed += (_, _) => _hotkeys?.Dispose();
+    }
+
+    private HotkeyService? _hotkeys;
+
+    /// <summary>Глобальные горячие клавиши записи и оверлея привязаны к окну приложения.</summary>
+    private void RegisterHotkeys()
+    {
+        if (HwndSource.FromHwnd(new WindowInteropHelper(this).Handle) is not { } source)
+        {
+            return;
+        }
+
+        var capture = AppServices.Current.Capture;
+        _hotkeys = new HotkeyService(source, capture.OnHotkey);
+        capture.HotkeyStatus = (_hotkeys.RecordRegistered, _hotkeys.OverlayRegistered) switch
+        {
+            (true, true) => "",
+            _ => Loc.T("Часть горячих клавиш занята другой программой: ", "Some hotkeys are taken by another app: ")
+                + string.Join(", ", new[] { _hotkeys.RecordRegistered ? null : "Ctrl+Alt+R", _hotkeys.OverlayRegistered ? null : "Ctrl+Alt+O" }.OfType<string>()),
+        };
+        if (!_hotkeys.RecordRegistered || !_hotkeys.OverlayRegistered)
+        {
+            AppServices.Current.Log.Warn("Горячие клавиши: " + capture.HotkeyStatus);
+        }
     }
 
     /// <summary>Размер окна по умолчанию не больше 92% рабочей области (ноутбуки 1366×768, масштаб 125–200%).</summary>

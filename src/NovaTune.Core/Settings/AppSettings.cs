@@ -55,12 +55,45 @@ public sealed class AppSettings
 
     public DateTimeOffset? LastScan { get; set; }
 
+    public RecordingSettings Recording { get; set; } = new();
+
     public void Normalize()
     {
+        Recording ??= new();
+        Recording.Fps = Recording.Fps is 30 or 60 ? Recording.Fps : 60;
+        Recording.Quality = Math.Clamp(Recording.Quality, 0, 2);
+        Recording.OverlayCorner = Math.Clamp(Recording.OverlayCorner, 0, 3);
         MonitoringIntervalMs = Math.Clamp(MonitoringIntervalMs, 500, 5000);
         Games ??= [];
         PingTargets ??= [];
     }
+}
+
+/// <summary>Настройки записи экрана и оверлея.</summary>
+public sealed class RecordingSettings
+{
+    public int Fps { get; set; } = 60;
+
+    /// <summary>0 — экономно, 1 — стандарт, 2 — высокое качество.</summary>
+    public int Quality { get; set; } = 1;
+
+    public bool CaptureAudio { get; set; } = true;
+
+    /// <summary>Папка для записей; null — «Видео\NOVA TUNE».</summary>
+    public string? Folder { get; set; }
+
+    /// <summary>Имя устройства монитора (\\.\DISPLAY1); null — основной.</summary>
+    public string? Monitor { get; set; }
+
+    /// <summary>Показывать оверлей во время записи.</summary>
+    public bool OverlayWhileRecording { get; set; } = true;
+
+    /// <summary>0 — справа сверху, 1 — слева сверху, 2 — справа снизу, 3 — слева снизу.</summary>
+    public int OverlayCorner { get; set; }
+
+    public bool OverlayShowStats { get; set; } = true;
+
+    public bool OverlayShowClock { get; set; } = true;
 }
 
 /// <summary>Загрузка и сохранение настроек (JSON, атомарная запись). Повреждённый файл не роняет приложение.</summary>
