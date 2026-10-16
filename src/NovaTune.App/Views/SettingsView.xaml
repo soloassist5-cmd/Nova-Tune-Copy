@@ -30,6 +30,17 @@
 
             <c:GlassPanel Margin="{StaticResource Gap.Card}">
                 <StackPanel>
+                    <TextBlock Text="{c:Tr 'Запуск', 'Startup'}" Style="{StaticResource Text.Subtitle}" />
+                    <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding Autostart}" Content="{c:Tr 'Запускать NOVA TUNE вместе с Windows', 'Start NOVA TUNE with Windows'}" Margin="{StaticResource Gap.Top12}" />
+                    <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding AutostartMinimized}" Content="{c:Tr 'Открывать свёрнутым на панель задач', 'Start minimized to the taskbar'}" Margin="{StaticResource Gap.Top12}"
+                              IsEnabled="{Binding Autostart}" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}" TextWrapping="Wrap"
+                               Text="{c:Tr 'Запись в автозагрузке только для вашего пользователя (без прав администратора). Удобно, чтобы горячие клавиши записи Ctrl+Alt+R и оверлея Ctrl+Alt+O работали сразу после включения ПК. Если перенести exe в другую папку, путь обновится при следующем запуске.', 'The startup entry is for your user only (no administrator rights). Handy so that recording (Ctrl+Alt+R) and overlay (Ctrl+Alt+O) hotkeys work right after the PC boots. If you move the exe, the path is updated on the next launch.'}" />
+                </StackPanel>
+            </c:GlassPanel>
+
+            <c:GlassPanel Margin="{StaticResource Gap.Card}">
+                <StackPanel>
                     <TextBlock Text="{c:Tr 'Датчики', 'Sensors'}" Style="{StaticResource Text.Subtitle}" />
                     <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding AdvancedSensors}" Content="{c:Tr 'Расширенные датчики (температура CPU)', 'Advanced sensors (CPU temperature)'}" Margin="{StaticResource Gap.Top12}" />
                     <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}"

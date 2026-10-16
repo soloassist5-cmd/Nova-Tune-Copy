@@ -57,6 +57,9 @@ public sealed class AppSettings
 
     public RecordingSettings Recording { get; set; } = new();
 
+    /// <summary>При автозапуске с Windows открывать окно свёрнутым на панель задач.</summary>
+    public bool AutostartMinimized { get; set; } = true;
+
     /// <summary>Свёрнутые блоки в «Мой ПК» (по Id раздела). null — по умолчанию свёрнута только «Сеть».</summary>
     public List<string>? CollapsedSections { get; set; }
 

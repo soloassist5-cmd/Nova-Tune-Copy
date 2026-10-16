@@ -118,6 +118,18 @@ public partial class App : Application
             window.Height = height;
         }
 
+        // Запуск вместе с Windows: окно сразу свёрнуто на панель задач и не перехватывает фокус.
+        if (args.Contains(AutostartService.Argument) && settings.AutostartMinimized)
+        {
+            window.WindowState = WindowState.Minimized;
+            window.ShowActivated = false;
+        }
+
+        if (screenshotDir is null)
+        {
+            AutostartService.RepairPathIfMoved();
+        }
+
         MainWindow = window;
         try
         {

@@ -80,23 +80,18 @@
     </UserControl.Resources>
 
     <DockPanel Margin="{StaticResource Pad.Page}">
-        <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
-                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="{Binding CollectedAt}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right12}" />
-                <Button Style="{StaticResource Button.Ghost}" Command="{Binding ExpandAllCommand}" Content="{c:Tr 'Развернуть все', 'Expand all'}" Margin="{StaticResource Gap.Right8}" />
-                <Button Style="{StaticResource Button.Ghost}" Command="{Binding CollapseAllCommand}" Content="{c:Tr 'Свернуть все', 'Collapse all'}" Margin="{StaticResource Gap.Right8}" />
-                <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
-                <Button Style="{StaticResource Button.Primary}" Command="{Binding CopyCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать сведения', 'Copy details'}" />
-            </StackPanel>
-        </Grid>
+        <!-- Заголовок и кнопки отдельными строками: на узком окне кнопки переносятся, а не сжимают заголовок. -->
+        <StackPanel DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+            <WrapPanel Margin="{StaticResource Gap.Top12}">
+                <Button Style="{StaticResource Button.Primary}" Command="{Binding CopyCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать сведения', 'Copy details'}" Margin="0,0,8,8" />
+                <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="0,0,8,8" />
+                <Button Style="{StaticResource Button.Ghost}" Command="{Binding ExpandAllCommand}" Content="{c:Tr 'Развернуть все', 'Expand all'}" Margin="0,0,8,8" />
+                <Button Style="{StaticResource Button.Ghost}" Command="{Binding CollapseAllCommand}" Content="{c:Tr 'Свернуть все', 'Collapse all'}" Margin="0,0,16,8" />
+                <TextBlock Text="{Binding CollectedAt}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,0,8" />
+            </WrapPanel>
+        </StackPanel>
 
         <Grid>
             <!-- Скелетон загрузки -->

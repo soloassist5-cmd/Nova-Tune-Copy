@@ -160,6 +160,36 @@ public sealed partial class SettingsViewModel(MainViewModel main) : PageViewMode
     [ObservableProperty] private string _language = S.Settings.Current.Language.ToString();
     [ObservableProperty] private bool _advancedSensors = S.Settings.Current.AdvancedSensors;
     [ObservableProperty] private string _backupFolder = S.Backup.BackupRoot;
+    [ObservableProperty] private bool _autostart = AutostartService.IsEnabled;
+    [ObservableProperty] private bool _autostartMinimized = S.Settings.Current.AutostartMinimized;
+
+    partial void OnAutostartChanged(bool value)
+    {
+        try
+        {
+            if (value)
+            {
+                AutostartService.Enable();
+                S.Toasts.Show(Loc.T("NOVA TUNE будет запускаться вместе с Windows", "NOVA TUNE will start with Windows"), DialogKind.Success);
+            }
+            else
+            {
+                AutostartService.Disable();
+                S.Toasts.Show(Loc.T("Автозапуск выключен", "Autostart disabled"));
+            }
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            S.Log.Error("Автозапуск: не удалось изменить реестр", ex);
+            S.Toasts.Show(Loc.T("Не удалось изменить автозапуск: ", "Could not change autostart: ") + ex.Message, DialogKind.Error);
+        }
+    }
+
+    partial void OnAutostartMinimizedChanged(bool value)
+    {
+        S.Settings.Current.AutostartMinimized = value;
+        S.Settings.Save();
+    }
 
     public bool IsElevated => OsInfo.IsElevated();
 
