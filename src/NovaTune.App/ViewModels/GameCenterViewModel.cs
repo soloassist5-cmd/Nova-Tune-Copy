@@ -42,7 +42,12 @@ public sealed partial class GameCard : ObservableObject
 
     public bool IsCs2 => Profile?.Id == "cs2";
 
-    public string Source => App is not null
+    /// <summary>Игра из каталога, которую не удалось найти автоматически (папку можно указать вручную).</summary>
+    public bool NotFound { get; init; }
+
+    public string Source => NotFound
+        ? Loc.T("не найдена — укажите папку", "not found — select folder")
+        : App is not null
         ? "Steam"
         : Profile is not null ? Loc.T("найдена по конфигам", "found by configs") : Loc.T("добавлена вручную", "added manually");
 
@@ -191,6 +196,19 @@ public sealed partial class GameCenterViewModel(MainViewModel main) : PageViewMo
                         Entry = saved.FirstOrDefault(g => g.Name == profile.Name) ?? new GameEntry { Name = profile.Name },
                     });
                 }
+            }
+
+            // Инструменты CS2 (прицел, чувствительность, конфиги) доступны всегда — даже если игра не найдена автоматически.
+            if (cards.All(c => c.Profile?.Id != "cs2"))
+            {
+                cards.Add(new GameCard
+                {
+                    Key = "profile:cs2",
+                    Name = "Counter-Strike 2",
+                    Profile = GameCatalog.Profiles.First(p => p.Id == "cs2"),
+                    Entry = saved.FirstOrDefault(g => g.SteamAppId == 730) ?? new GameEntry { Name = "Counter-Strike 2", SteamAppId = 730 },
+                    NotFound = true,
+                });
             }
 
             foreach (var manual in saved.Where(g => g.SteamAppId is null && cards.All(c => c.Name != g.Name)))
