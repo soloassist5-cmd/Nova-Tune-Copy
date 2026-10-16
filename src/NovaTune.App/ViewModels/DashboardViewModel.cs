@@ -6,6 +6,8 @@ using NovaTune.App.Services;
 using NovaTune.Core.Analysis;
 using NovaTune.Core.Hardware;
 using NovaTune.Core.Localization;
+using NovaTune.Core.Optimization;
+using NovaTune.Core.Steam;
 using NovaTune.Platform;
 
 namespace NovaTune.App.ViewModels;
@@ -202,6 +204,63 @@ public sealed partial class DashboardViewModel(MainViewModel main) : PageViewMod
 
     [RelayCommand]
     private void Open(string key) => main.Navigate(key);
+
+    /// <summary>
+    /// «Готов к матчу?»: одна проверка того, что чаще всего мешает в игре.
+    /// Мониторы перечитываются заново (частоту могли сменить), остальное — свежие показания.
+    /// </summary>
+    [RelayCommand]
+    private Task MatchCheck() => RunSafeAsync(async () =>
+    {
+        IsScanning = true;
+        try
+        {
+            var hw = (await S.Hardware.GetAsync(false, PageCts.Token)).Summary with { Monitors = HardwareService.ReadMonitors() };
+            var context = await S.GetContextAsync();
+            var samples = Math.Max(1, 60_000 / S.Monitoring.IntervalMs);
+            var steam = SteamLocator.FindSteamPath();
+            var cs2 = await Task.Run(() => Cs2Locator.Locate(steam, S.Settings.Current.Cs2ManualPath, S.Log));
+            VolumeSummary? gameVolume = cs2 is not null && Path.GetPathRoot(cs2.GameDir) is { Length: > 0 } root
+                ? hw.Volumes.FirstOrDefault(v => char.ToUpperInvariant(v.Letter) == char.ToUpperInvariant(root[0]))
+                : hw.SystemVolume;
+            var checks = Cs2Advisor.Readiness(new Cs2ReadinessInput(
+                hw,
+                gameVolume,
+                new GameModeModule().ReadState(S.Store, context).IsRecommendedState,
+                S.Store.GetActivePowerScheme() is { } a ? a == Core.Common.PowerSchemeInfo.PowerSaver : null,
+                new GameDvrModule().ReadState(S.Store, context).IsRecommendedState,
+                S.Monitoring.CpuLoad.Count >= samples / 2 ? S.Monitoring.CpuLoad.AverageOfLast(samples) : null,
+                S.Monitoring.Last?.RamUsedPercent.Value)).ToList();
+            if (DiagnosticsService.PendingReboot() is true)
+            {
+                checks.Add(new ReadinessCheck(Loc.T("Ожидающая перезагрузка", "Pending restart"), CriterionLevel.Warning, Loc.T("Windows ждёт перезагрузки — лучше перезагрузиться до матча.", "Windows is waiting for a restart — better restart before the match.")));
+            }
+
+            var bad = checks.Count(c => c.Level == CriterionLevel.Bad);
+            var warn = checks.Count(c => c.Level == CriterionLevel.Warning);
+            var lines = checks
+                .OrderByDescending(c => c.Level)
+                .Select(c => (c.Level switch { CriterionLevel.Good => "✓ ", CriterionLevel.Warning => "⚠ ", _ => "✗ " }) + c.Title + " — " + c.Detail)
+                .ToList();
+            if (cs2 is null)
+            {
+                lines.Add(Loc.T("ⓘ CS2 не найдена — место проверено на системном диске.", "ⓘ CS2 not found — free space checked on the system drive."));
+            }
+
+            S.Journal.Add("match-check", Loc.T("Проверка «Готов к матчу?»", "«Ready for a match?» check"), bad == 0, Loc.T($"проблем: {bad}, предупреждений: {warn}", $"problems: {bad}, warnings: {warn}"));
+            await S.Dialogs.AlertAsync(
+                bad == 0 && warn == 0 ? Loc.T("Готов к матчу", "Ready for a match") : bad == 0 ? Loc.T("Почти готов", "Almost ready") : Loc.T("Есть что исправить", "Some things to fix"),
+                bad == 0 && warn == 0
+                    ? Loc.T("Всё, что можно проверить, в порядке. Удачной игры!", "Everything that can be checked is fine. Good luck!")
+                    : Loc.T($"Проблем: {bad}, предупреждений: {warn}. Подробности ниже — большинство исправляется в разделах «Оптимизация» и «Инструменты».", $"Problems: {bad}, warnings: {warn}. Details below — most can be fixed in Optimize and Tools."),
+                bad == 0 && warn == 0 ? DialogKind.Success : bad == 0 ? DialogKind.Warning : DialogKind.Error,
+                new TextLines(lines));
+        }
+        finally
+        {
+            IsScanning = false;
+        }
+    }, Loc.T("Проверка не выполнена", "Check failed"));
 }
 
 /// <summary>Страница использует мониторинг: пока она открыта, датчики не приостанавливаются.</summary>

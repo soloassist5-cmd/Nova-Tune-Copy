@@ -130,6 +130,47 @@
                     </StackPanel>
                 </c:GlassPanel>
             </Grid>
+            <!-- Тест реакции -->
+            <c:GlassPanel Margin="{StaticResource Gap.Top16}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="18" Height="18" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Bolt}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{c:Tr 'Тест реакции', 'Reaction test'}" Style="{StaticResource Text.Subtitle}" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource Button.Ghost}" Click="OnReactionReset" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Сбросить', 'Reset'}" />
+                    </Grid>
+                    <TextBlock Text="{c:Tr 'Дождитесь зелёного цвета и кликните как можно быстрее. В результат входит задержка мыши, системы и монитора — сравнивайте свои попытки между собой.', 'Wait for green and click as fast as you can. The result includes mouse, system and display latency — compare your own attempts with each other.'}"
+                               Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}" />
+                    <Border x:Name="ReactionArea" Height="180" CornerRadius="16" Margin="{StaticResource Gap.Top12}" Cursor="Hand" PreviewMouseDown="OnReactionDown">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource Brush.Input}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ReactionState}" Value="wait">
+                                        <Setter Property="Background" Value="#FFB3403F" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ReactionState}" Value="go">
+                                        <Setter Property="Background" Value="#FF2FB36E" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ReactionState}" Value="early">
+                                        <Setter Property="Background" Value="{DynamicResource Brush.WarningSoft}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding ReactionText}" Style="{StaticResource Text.Title}" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="{Binding ReactionStats}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" Margin="{StaticResource Gap.Top8}"
+                               Visibility="{Binding ReactionStats, Converter={StaticResource NullToVis}}" />
+                </StackPanel>
+            </c:GlassPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

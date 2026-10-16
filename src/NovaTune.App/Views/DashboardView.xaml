@@ -261,6 +261,7 @@
                                        Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top4}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0" Visibility="{Binding Main.HasOptimize, Converter={StaticResource BoolToVis}}">
+                            <Button Command="{Binding MatchCheckCommand}" c:Ui.Icon="{StaticResource Icon.Check}" Content="{c:Tr 'Готов к матчу?', 'Ready for a match?'}" Margin="{StaticResource Gap.Right8}" />
                             <Button Command="{Binding OpenCommand}" CommandParameter="cs2" c:Ui.Icon="{StaticResource Icon.Crosshair}" Content="CS2" Margin="{StaticResource Gap.Right8}" />
                             <Button Style="{StaticResource Button.Primary}" Command="{Binding OpenCommand}" CommandParameter="optimize" c:Ui.Icon="{StaticResource Icon.Bolt}" Content="{c:Tr 'Оптимизация', 'Optimize'}" />
                         </StackPanel>

@@ -54,6 +54,8 @@ public sealed partial class Cs2ViewModel(MainViewModel main) : PageViewModel
         try
         {
             Profile = S.Settings.Current.Cs2Profile;
+            CrossColor ??= Colors[0];
+            SensSource ??= SensGames[0];
             var steam = SteamLocator.FindSteamPath();
             _cs2 = await Task.Run(() => Cs2Locator.Locate(steam, S.Settings.Current.Cs2ManualPath, S.Log), PageCts.Token);
             _hw = (await S.Hardware.GetAsync(false, PageCts.Token)).Summary;

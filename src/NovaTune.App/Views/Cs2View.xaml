@@ -21,6 +21,16 @@
                 </StackPanel>
             </Grid>
 
+            <Border Style="{StaticResource SegmentHost}" Margin="{StaticResource Gap.Bottom16}">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton Style="{StaticResource Segment}" GroupName="cs2tab" Content="{c:Tr 'Обзор', 'Overview'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=overview}" />
+                    <RadioButton Style="{StaticResource Segment}" GroupName="cs2tab" Content="{c:Tr 'Прицел', 'Crosshair'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=crosshair}" />
+                    <RadioButton Style="{StaticResource Segment}" GroupName="cs2tab" Content="{c:Tr 'Чувствительность', 'Sensitivity'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=sens}" />
+                    <RadioButton Style="{StaticResource Segment}" GroupName="cs2tab" Content="{c:Tr 'Тренировка', 'Practice'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=practice}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=overview}">
             <!-- Статус -->
             <c:GlassPanel Margin="{StaticResource Gap.Card}">
                 <StackPanel>
@@ -157,6 +167,123 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </StackPanel>
+            </c:GlassPanel>
+            </StackPanel>
+
+            <!-- ═══ Прицел ═══ -->
+            <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=crosshair}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{c:Tr 'Генератор прицела', 'Crosshair generator'}" Style="{StaticResource Text.Subtitle}" />
+                        <TextBlock Text="{c:Tr 'Стандартные команды cl_crosshair* — то же, что настройки прицела в самой игре.', 'Standard cl_crosshair* commands — the same as the in-game crosshair settings.'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Bottom12}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="50" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="36" />
+                                <RowDefinition Height="36" />
+                                <RowDefinition Height="36" />
+                                <RowDefinition Height="36" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{c:Tr 'Размер', 'Size'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                            <Slider Grid.Column="1" Minimum="0" Maximum="10" SmallChange="0.5" TickFrequency="0.5" IsSnapToTickEnabled="True" Value="{Binding CrossSize}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding CrossSize, StringFormat={}{0:0.0}}" Style="{StaticResource Text.Body}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="1" Text="{c:Tr 'Толщина', 'Thickness'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                            <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="3" TickFrequency="0.1" IsSnapToTickEnabled="True" Value="{Binding CrossThickness}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CrossThickness, StringFormat={}{0:0.0}}" Style="{StaticResource Text.Body}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="2" Text="{c:Tr 'Зазор', 'Gap'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                            <Slider Grid.Row="2" Grid.Column="1" Minimum="-5" Maximum="5" TickFrequency="0.5" IsSnapToTickEnabled="True" Value="{Binding CrossGap}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding CrossGap, StringFormat={}{0:0.0}}" Style="{StaticResource Text.Body}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="3" Text="{c:Tr 'Прозрачность', 'Opacity'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                            <Slider Grid.Row="3" Grid.Column="1" Minimum="50" Maximum="255" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding CrossAlpha}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding CrossAlpha, StringFormat={}{0:0}}" Style="{StaticResource Text.Body}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                            <TextBlock Text="{c:Tr 'Цвет', 'Color'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Width="150" />
+                            <ComboBox ItemsSource="{Binding Colors}" SelectedItem="{Binding CrossColor}" DisplayMemberPath="Name" />
+                        </StackPanel>
+                        <WrapPanel Margin="{StaticResource Gap.Top12}">
+                            <CheckBox Content="{c:Tr 'Точка в центре', 'Center dot'}" IsChecked="{Binding CrossDot}" Margin="0,0,20,8" />
+                            <CheckBox Content="{c:Tr 'Обводка', 'Outline'}" IsChecked="{Binding CrossOutline}" Margin="0,0,20,8" />
+                            <CheckBox Content="{c:Tr 'T-образный', 'T-style'}" IsChecked="{Binding CrossT}" Margin="0,0,20,8" />
+                        </WrapPanel>
+                        <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,10" Margin="{StaticResource Gap.Top12}">
+                            <TextBlock Text="{Binding CrosshairLine}" Style="{StaticResource Text.Mono}" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                            <Button Style="{StaticResource Button.Primary}" Command="{Binding CopyCrosshairCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать для консоли', 'Copy for console'}" Margin="{StaticResource Gap.Right8}" />
+                            <Button Command="{Binding SaveCrosshairCommand}" c:Ui.Icon="{StaticResource Icon.Download}" Content="{c:Tr 'Сохранить в crosshair.cfg', 'Save to crosshair.cfg'}" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <c:CrosshairPreview Settings="{Binding Crosshair}" Width="300" Height="220" />
+                        <TextBlock Text="{c:Tr 'Превью приблизительное (масштаб 1080p).', 'Approximate preview (1080p scale).'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}" />
+                    </StackPanel>
+                </Grid>
+            </c:GlassPanel>
+
+            <!-- ═══ Чувствительность ═══ -->
+            <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=sens}">
+                <StackPanel MaxWidth="720" HorizontalAlignment="Left">
+                    <TextBlock Text="{c:Tr 'Калькулятор чувствительности', 'Sensitivity calculator'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="{c:Tr 'eDPI, сантиметры на 360° и перевод из других игр по одинаковому углу поворота.', 'eDPI, cm per 360° and conversion from other games by equal turn angle.'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Bottom12}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{c:Tr 'Игра-источник', 'Source game'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding SensGames}" SelectedItem="{Binding SensSource}" DisplayMemberPath="Name" HorizontalAlignment="Left" MinWidth="260" />
+                        <TextBlock Grid.Row="1" Text="DPI" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SensDpi, UpdateSourceTrigger=PropertyChanged}" Width="140" HorizontalAlignment="Left" />
+                        <TextBlock Grid.Row="2" Text="{c:Tr 'Чувствительность в игре', 'In-game sensitivity'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SensValue, UpdateSourceTrigger=PropertyChanged}" Width="140" HorizontalAlignment="Left" />
+                    </Grid>
+                    <Border Background="{DynamicResource Brush.Input}" CornerRadius="12" Padding="16,14" Margin="{StaticResource Gap.Top16}">
+                        <TextBlock Text="{Binding SensResult}" Style="{StaticResource Text.Body}" LineHeight="24" />
+                    </Border>
+                    <Button Command="{Binding CopySensCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать команду sensitivity', 'Copy sensitivity command'}" HorizontalAlignment="Left" Margin="{StaticResource Gap.Top12}" />
+                </StackPanel>
+            </c:GlassPanel>
+
+            <!-- ═══ Тренировка ═══ -->
+            <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=practice}">
+                <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+                    <TextBlock Text="{c:Tr 'Тренировка на своём сервере', 'Practice on your own server'}" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}"
+                               Text="{c:Tr 'Создаёт practice.cfg для локальной карты: раскидки гранат, стрельба, прострелы. Работает только на сервере, который запустили вы сами, — на официальных серверах эти команды недоступны.', 'Creates practice.cfg for a local map: grenade lineups, shooting, wallbangs. It only works on a server you started yourself — these commands are unavailable on official servers.'}" />
+                    <WrapPanel Margin="{StaticResource Gap.Top12}">
+                        <CheckBox Content="{c:Tr 'Бесконечные патроны', 'Infinite ammo'}" IsChecked="{Binding PracticeAmmo}" Margin="0,0,20,8" />
+                        <CheckBox Content="{c:Tr 'Траектория гранат', 'Grenade trajectory'}" IsChecked="{Binding PracticeTrajectory}" Margin="0,0,20,8" />
+                        <CheckBox Content="{c:Tr 'Места попаданий', 'Bullet impacts'}" IsChecked="{Binding PracticeImpacts}" Margin="0,0,20,8" />
+                        <CheckBox Content="{c:Tr 'Без ботов', 'No bots'}" IsChecked="{Binding PracticeNoBots}" Margin="0,0,20,8" />
+                    </WrapPanel>
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                        <TextBlock Text="{c:Tr 'Карта', 'Map'}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right12}" />
+                        <ComboBox ItemsSource="{Binding Maps}" SelectedItem="{Binding PracticeMap}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top16}" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}">
+                        <Button Command="{Binding CreatePracticeCommand}" c:Ui.Icon="{StaticResource Icon.Download}" Content="{c:Tr 'Создать practice.cfg', 'Create practice.cfg'}" Margin="{StaticResource Gap.Right8}" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding LaunchPracticeCommand}" c:Ui.Icon="{StaticResource Icon.Play}" Content="{c:Tr 'Запустить тренировку', 'Launch practice'}" />
+                    </StackPanel>
+                    <TextBlock Text="{c:Tr 'CS2 не найдена — укажите папку игры на вкладке «Обзор».', 'CS2 not found — select the game folder on the Overview tab.'}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top12}"
+                               Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top12}"
+                               Text="{c:Tr 'Steam покажет окно подтверждения параметров запуска — это нормально. Если настройки не применились после загрузки карты, откройте консоль (~) и введите exec practice.', 'Steam will ask to confirm the launch parameters — this is normal. If the settings did not apply after the map loads, open the console (~) and type exec practice.'}" />
                 </StackPanel>
             </c:GlassPanel>
         </StackPanel>

@@ -832,4 +832,46 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- ═════════════ Ползунок ═════════════ -->
+    <Style x:Key="SliderEdge" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent">
+                        <Border Height="4" CornerRadius="2" Background="{TemplateBinding Background}" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Slider">
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="IsMoveToPointEnabled" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Track x:Name="PART_Track">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Style="{StaticResource SliderEdge}" Background="{DynamicResource Brush.Accent}" Command="Slider.DecreaseLarge" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Style="{StaticResource SliderEdge}" Background="{DynamicResource Brush.Track}" Command="Slider.IncreaseLarge" />
+                        </Track.IncreaseRepeatButton>
+                        <Track.Thumb>
+                            <Thumb Width="16" Height="16" Cursor="Hand">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Ellipse Fill="White" Stroke="{DynamicResource Brush.Accent}" StrokeThickness="2" />
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Track.Thumb>
+                    </Track>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

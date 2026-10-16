@@ -486,3 +486,51 @@ public sealed class MeasurementTests
         Assert.Equal(2, s.Count);
     }
 }
+
+public sealed class Cs2ToolsTests
+{
+    [Fact]
+    public void CmPer360_KnownValue()
+    {
+        // 800 DPI, sens 1.0 в CS2: 360 / (0.022 * 800) * 2.54 ≈ 51.95 см.
+        Assert.Equal(51.95, NovaTune.Core.Tools.SensitivityCalculator.CmPer360(800, 1.0), 2);
+        Assert.Equal(800, NovaTune.Core.Tools.SensitivityCalculator.Edpi(800, 1.0));
+    }
+
+    [Fact]
+    public void ValorantToCs2_Ratio()
+    {
+        // Valorant 0.35 → CS2 ≈ 1.1136 (коэффициент 3.1818).
+        Assert.Equal(1.1136, NovaTune.Core.Tools.SensitivityCalculator.ToCs2(0.35, 0.07), 3);
+    }
+
+    [Fact]
+    public void Crosshair_CommandsAreClampedAndInvariant()
+    {
+        var text = new NovaTune.Core.Tools.CrosshairSettings { Size = 500, Gap = -3.5 }.ToCommands(singleLine: true);
+        Assert.Contains("cl_crosshairsize 100", text);
+        Assert.Contains("cl_crosshairgap -3.5", text);
+        Assert.DoesNotContain(",", text);
+    }
+
+    [Fact]
+    public void Practice_LaunchUrlRejectsUnknownMap()
+    {
+        Assert.StartsWith("steam://run/730//", NovaTune.Core.Tools.PracticeConfig.LaunchUrl("de_mirage"));
+        Assert.Throws<ArgumentException>(() => NovaTune.Core.Tools.PracticeConfig.LaunchUrl("de_mirage; quit"));
+        Assert.Contains("sv_infinite_ammo 1", NovaTune.Core.Tools.PracticeConfig.Build(true, true, true, true));
+    }
+
+    [Fact]
+    public void Reaction_IgnoresInvalidAndAveragesLast5()
+    {
+        var r = new NovaTune.Core.Tools.ReactionStats();
+        foreach (var v in new double[] { -1, 300, 200, 250, 210, 190, 180, 99999 })
+        {
+            r.Add(v);
+        }
+
+        Assert.Equal(180, r.Best);
+        Assert.Equal((200 + 250 + 210 + 190 + 180) / 5.0, r.AverageLast5);
+    }
+}
