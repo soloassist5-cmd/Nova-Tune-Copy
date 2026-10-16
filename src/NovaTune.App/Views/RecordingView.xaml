@@ -145,7 +145,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding CaptureAudio}" Content="{c:Tr 'Записывать системный звук (игра, Discord, музыка)', 'Record system audio (game, Discord, music)'}" Margin="{StaticResource Gap.Top16}"
+                        <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding CaptureAudio}" Content="{c:Tr 'Системный звук (игра, Discord)', 'System audio (game, Discord)'}" Margin="{StaticResource Gap.Top16}"
                                   IsEnabled="{Binding Capture.IsRecording, Converter={StaticResource Not}}" />
                         <TextBlock Text="{Binding Estimate}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}" />
 
