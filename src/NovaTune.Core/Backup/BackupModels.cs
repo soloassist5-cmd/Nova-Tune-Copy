@@ -119,6 +119,9 @@ public sealed class BackupRecord
 
     public string Title { get; set; } = "";
 
+    /// <summary>Метка для фильтрации (например, «game:730» — бэкапы конфигов конкретной игры).</summary>
+    public string? Tag { get; set; }
+
     public BackupStatus Status { get; set; }
 
     public bool RequiresRestart { get; set; }

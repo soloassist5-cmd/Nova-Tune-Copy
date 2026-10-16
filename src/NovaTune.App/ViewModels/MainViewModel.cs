@@ -44,8 +44,7 @@ public sealed partial class MainViewModel : ObservableObject
             new("mypc", new("Мой ПК", "My PC"), "Icon.Pc", () => new MyPcViewModel()),
             new("monitoring", new("Мониторинг", "Monitoring"), "Icon.Pulse", () => new MonitoringViewModel()),
             new("optimize", new("Оптимизация", "Optimize"), "Icon.Sliders", () => new OptimizeViewModel(this)),
-            new("cs2", new("CS2", "CS2 Optimizer"), "Icon.Crosshair", () => new Cs2ViewModel(this)),
-            new("games", new("Игры", "Game Center"), "Icon.Gamepad", () => new GameCenterViewModel()),
+            new("games", new("Игры", "Game Center"), "Icon.Gamepad", () => new GameCenterViewModel(this)),
             new("startup", new("Автозагрузка", "Startup"), "Icon.Power", () => new StartupViewModel()),
             new("cleanup", new("Очистка", "Cleanup"), "Icon.Broom", () => new CleanupViewModel()),
             new("tools", new("Инструменты", "Tools"), "Icon.Tools", () => new ToolsViewModel()),
@@ -101,6 +100,14 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void Navigate(string key)
     {
+        // CS2 теперь живёт внутри «Игр»: открываем библиотеку и сразу страницу CS2.
+        if (key == "cs2")
+        {
+            Selected = Items.FirstOrDefault(i => i.Key == "games") ?? Selected;
+            GetPage<GameCenterViewModel>()?.OpenByProfile("cs2");
+            return;
+        }
+
         Selected = Items.FirstOrDefault(i => i.Key == key) ?? Selected;
     }
 

@@ -304,3 +304,66 @@ public sealed class MonitorRefreshTests
         Assert.Contains(checks, c => c.Level == NovaTune.Core.Analysis.CriterionLevel.Bad && c.Detail.Contains("165"));
     }
 }
+
+public sealed class GameCatalogTests : IDisposable
+{
+    private readonly TestDir _dir = new();
+
+    public void Dispose() => _dir.Dispose();
+
+    private NovaTune.Core.Games.KnownFolders Folders() => new(_dir.Combine("Docs"), _dir.Combine("Local"), _dir.Combine("Roaming"), _dir.Combine("Saved"));
+
+    [Fact]
+    public void Cs2AndCsgo_AreDistinguishedByExe()
+    {
+        var install = _dir.Combine("Counter-Strike Global Offensive");
+        _dir.WriteFile("Counter-Strike Global Offensive/game/bin/win64/cs2.exe", "");
+        Assert.Equal("cs2", NovaTune.Core.Games.GameCatalog.ForSteamApp(730, install)!.Id);
+
+        var legacy = _dir.Combine("Legacy");
+        _dir.WriteFile("Legacy/csgo.exe", "");
+        Assert.Equal("csgo", NovaTune.Core.Games.GameCatalog.ForSteamApp(730, legacy)!.Id);
+        Assert.Equal("dota2", NovaTune.Core.Games.GameCatalog.ForSteamApp(570, _dir.Path)!.Id);
+        Assert.Null(NovaTune.Core.Games.GameCatalog.ForSteamApp(999999, _dir.Path));
+    }
+
+    [Fact]
+    public void ResolvesOnlyExistingDirs_AcrossSteamAccounts()
+    {
+        var dota = NovaTune.Core.Games.GameCatalog.Profiles.Single(p => p.Id == "dota2");
+        _dir.WriteFile("Dota/game/dota/cfg/autoexec.cfg", "x");
+        _dir.WriteFile("Steam/userdata/111/570/remote/cfg/dotakeys_personal.lst", "k");
+        Directory.CreateDirectory(_dir.Combine("Steam", "userdata", "222"));
+
+        var dirs = NovaTune.Core.Games.ConfigLocator.ResolveDirectories(dota, _dir.Combine("Dota"), _dir.Combine("Steam"), ["111", "222"], Folders());
+        var files = NovaTune.Core.Games.ConfigLocator.CollectFiles(dirs);
+
+        Assert.Equal(2, dirs.Count);
+        Assert.Equal(2, files.Count);
+    }
+
+    [Fact]
+    public void NonSteamGame_FoundByKnownFolder_PatternRespected()
+    {
+        var mc = NovaTune.Core.Games.GameCatalog.Profiles.Single(p => p.Id == "minecraft");
+        _dir.WriteFile("Roaming/.minecraft/options.txt", "o");
+        _dir.WriteFile("Roaming/.minecraft/launcher_accounts.json", "secret");
+
+        var files = NovaTune.Core.Games.ConfigLocator.CollectFiles(NovaTune.Core.Games.ConfigLocator.ResolveDirectories(mc, null, null, [], Folders()));
+
+        Assert.Single(files);
+        Assert.EndsWith("options.txt", files[0]);
+    }
+
+    [Fact]
+    public void NovaConfigs_HaveNoMultiActionBinds()
+    {
+        Assert.Equal(3, NovaTune.Core.Tools.Cs2NovaConfigs.All.Count);
+        foreach (var c in NovaTune.Core.Tools.Cs2NovaConfigs.All)
+        {
+            Assert.DoesNotContain("sv_cheats", c.Content);
+            Assert.DoesNotContain("alias", c.Content);
+            Assert.Contains("+exec " + Path.GetFileNameWithoutExtension(c.FileName), c.Content);
+        }
+    }
+}

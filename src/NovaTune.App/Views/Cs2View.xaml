@@ -4,17 +4,14 @@
              xmlns:c="clr-namespace:NovaTune.App.Controls"
              xmlns:vm="clr-namespace:NovaTune.App.ViewModels"
              xmlns:steam="clr-namespace:NovaTune.Core.Steam;assembly=NovaTune.Core">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="{StaticResource Pad.Page}">
+    <Grid>
+        <StackPanel>
             <Grid Margin="{StaticResource Gap.Bottom16}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Margin="{StaticResource Gap.Right16}">
-                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
-                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
-                </StackPanel>
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right16}" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
                     <Button Style="{StaticResource Button.Primary}" Command="{Binding LaunchCommand}" c:Ui.Icon="{StaticResource Icon.Play}" Content="{c:Tr 'Запустить CS2', 'Launch CS2'}" Visibility="{Binding IsFound, Converter={StaticResource BoolToVis}}" />
@@ -287,5 +284,5 @@
                 </StackPanel>
             </c:GlassPanel>
         </StackPanel>
-    </ScrollViewer>
+    </Grid>
 </UserControl>

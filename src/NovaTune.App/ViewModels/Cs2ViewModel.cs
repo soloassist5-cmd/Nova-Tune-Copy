@@ -198,7 +198,7 @@ public sealed partial class Cs2ViewModel(MainViewModel main) : PageViewModel
             return;
         }
 
-        var record = await Task.Run(() => S.Backup.CreateFileSnapshot(Loc.T("Конфиги CS2", "CS2 configs"), BackupKind.GameConfig, files));
+        var record = await Task.Run(() => S.Backup.CreateFileSnapshot(Loc.T("Конфиги: Counter-Strike 2", "Configs: Counter-Strike 2"), BackupKind.GameConfig, files, "game:cs2"));
         S.Toasts.Show(Loc.T($"Бэкап конфигов создан: {record.Items.Count} файлов", $"Config backup created: {record.Items.Count} files"), DialogKind.Success);
     }, Loc.T("Не удалось создать бэкап конфигов", "Failed to back up configs"));
 

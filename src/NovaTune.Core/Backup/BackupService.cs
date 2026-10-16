@@ -231,9 +231,10 @@ public sealed class BackupService
     // ───────────────────────────── Снимки (ручной бэкап) ─────────────────────────────
 
     /// <summary>Сохраняет текущее состояние целей без изменений (ручной бэкап).</summary>
-    public BackupRecord CreateSnapshot(string title, BackupKind kind, IReadOnlyList<PlannedChange> targets)
+    public BackupRecord CreateSnapshot(string title, BackupKind kind, IReadOnlyList<PlannedChange> targets, string? tag = null)
     {
         var record = NewRecord(title, kind, BackupStatus.Snapshot);
+        record.Tag = tag;
         for (var i = 0; i < targets.Count; i++)
         {
             var item = Capture(targets[i], record, i);
@@ -249,13 +250,18 @@ public sealed class BackupService
     }
 
     /// <summary>Бэкап файлов (например, конфигов CS2) с копиями и хэшами.</summary>
-    public BackupRecord CreateFileSnapshot(string title, BackupKind kind, IEnumerable<string> files)
+    public BackupRecord CreateFileSnapshot(string title, BackupKind kind, IEnumerable<string> files, string? tag = null)
     {
         var targets = files
             .Where(File.Exists)
             .Select(f => (PlannedChange)new FileWriteChange(f, []) { Title = Path.GetFileName(f) })
             .ToList();
-        return CreateSnapshot(title, kind, targets);
+        if (targets.Count == 0)
+        {
+            throw new InvalidOperationException(Loc.T("Файлов для бэкапа не найдено.", "No files to back up."));
+        }
+
+        return CreateSnapshot(title, kind, targets, tag);
     }
 
     // ───────────────────────────── Восстановление ─────────────────────────────

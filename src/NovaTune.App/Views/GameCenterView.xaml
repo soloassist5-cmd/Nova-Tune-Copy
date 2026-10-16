@@ -3,64 +3,311 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:NovaTune.App.Controls"
              xmlns:vm="clr-namespace:NovaTune.App.ViewModels">
-    <DockPanel Margin="{StaticResource Pad.Page}">
-        <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Margin="{StaticResource Gap.Right16}">
-                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
-                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
-                <TextBlock Text="{Binding SteamStatus}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Command="{Binding LoadCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
-                <Button Style="{StaticResource Button.Primary}" Command="{Binding AddCommand}" c:Ui.Icon="{StaticResource Icon.Plus}" Content="{c:Tr 'Добавить игру', 'Add game'}" />
-            </StackPanel>
-        </Grid>
+    <UserControl.Resources>
+        <!-- Карточка игры: обложка 2:3 из кэша Steam или градиент с инициалами -->
+        <Style x:Key="GameCardButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Margin" Value="0,0,18,22" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <StackPanel Width="168" RenderTransformOrigin="0.5,0.5">
+                            <StackPanel.RenderTransform>
+                                <ScaleTransform x:Name="Scale" ScaleX="1" ScaleY="1" />
+                            </StackPanel.RenderTransform>
+                            <Grid Height="252">
+                                <Border CornerRadius="14" Margin="6,12,6,-4" Background="{DynamicResource Brush.ShadowFill}" IsHitTestVisible="False">
+                                    <Border.Effect>
+                                        <BlurEffect Radius="18" />
+                                    </Border.Effect>
+                                </Border>
+                                <Border CornerRadius="14" Background="{DynamicResource Brush.AccentGradient}">
+                                    <TextBlock Text="{Binding Initials}" FontSize="44" FontWeight="Bold" Foreground="#E6FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="{StaticResource Font.Display}" />
+                                </Border>
+                                <Border CornerRadius="14">
+                                    <Border.Background>
+                                        <ImageBrush ImageSource="{Binding Cover}" Stretch="UniformToFill" />
+                                    </Border.Background>
+                                </Border>
+                                <Border CornerRadius="14" BorderThickness="1" BorderBrush="{DynamicResource Brush.GlassBorder}" />
+                                <Border x:Name="Glow" CornerRadius="14" BorderThickness="2" BorderBrush="{DynamicResource Brush.Accent}" Opacity="0" />
+                                <Border CornerRadius="10" Background="#B3101318" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8" Padding="7,2"
+                                        Visibility="{Binding IsSupported, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{c:Tr 'конфиги', 'configs'}" FontSize="10.5" FontWeight="SemiBold" Foreground="#FF9DB8FF" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" Margin="2,10,2,0" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding Name}" />
+                            <TextBlock Text="{Binding Source}" Style="{StaticResource Text.Caption}" Margin="2,0" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleX" To="1.04" Duration="{StaticResource Anim.Normal}" EasingFunction="{StaticResource Ease.Out}" />
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleY" To="1.04" Duration="{StaticResource Anim.Normal}" EasingFunction="{StaticResource Ease.Out}" />
+                                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Anim.Fast}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleX" To="1" Duration="{StaticResource Anim.Normal}" EasingFunction="{StaticResource Ease.Out}" />
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleY" To="1" Duration="{StaticResource Anim.Normal}" EasingFunction="{StaticResource Ease.Out}" />
+                                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource Anim.Normal}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.45*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="0.55*" />
-            </Grid.ColumnDefinitions>
-            <c:GlassPanel Padding="8">
-                <Grid>
-                    <ListBox Style="{StaticResource PlainList}" ItemsSource="{Binding Games}" SelectedItem="{Binding Selected}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:GameRow}">
-                                <StackPanel Margin="12,10">
-                                    <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                                    <TextBlock Text="{Binding Source}" Style="{StaticResource Text.Caption}" />
+    <Grid>
+        <!-- ═════════════ Библиотека ═════════════ -->
+        <DockPanel Margin="{StaticResource Pad.Page}" Visibility="{Binding IsDetail, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
+            <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom16}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="{StaticResource Gap.Right16}">
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Headline}" />
+                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
+                    <TextBlock Text="{Binding LibraryStatus}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top8}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" c:Ui.Placeholder="{c:Tr 'Поиск игры', 'Search games'}" Width="220" Margin="{StaticResource Gap.Right8}" />
+                    <Button Style="{StaticResource Button.Icon}" Command="{Binding LoadCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" ToolTip="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
+                    <Button Style="{StaticResource Button.Primary}" Command="{Binding AddCommand}" c:Ui.Icon="{StaticResource Icon.Plus}" Content="{c:Tr 'Добавить игру', 'Add game'}" />
+                </StackPanel>
+            </Grid>
+            <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Filtered}" Margin="0,4,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:GameCard}">
+                                <Button Style="{StaticResource GameCardButton}" Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <ContentControl Style="{StaticResource Spinner}" Width="28" Height="28" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Text="{c:Tr 'Игр не найдено. Добавьте игру вручную или установите игры через Steam.', 'No games found. Add one manually or install games via Steam.'}" Style="{StaticResource Text.Secondary}"
+                           Visibility="{Binding Filtered.Count, Converter={StaticResource NullToVis}, ConverterParameter=invert}" VerticalAlignment="Top" />
+            </Grid>
+        </DockPanel>
+
+        <!-- ═════════════ Страница игры ═════════════ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsDetail, Converter={StaticResource BoolToVis}}">
+            <StackPanel Margin="{StaticResource Pad.Page}">
+                <!-- Баннер -->
+                <Grid Height="230" Margin="{StaticResource Gap.Bottom16}">
+                    <Border CornerRadius="22" Background="{DynamicResource Brush.AccentGradient}" />
+                    <Border CornerRadius="22">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding Selected.Hero}" Stretch="UniformToFill" />
+                        </Border.Background>
+                    </Border>
+                    <Border CornerRadius="22">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Offset="0" Color="#33000000" />
+                                <GradientStop Offset="0.55" Color="#66000000" />
+                                <GradientStop Offset="1" Color="#E6090B10" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Border CornerRadius="22" BorderThickness="1" BorderBrush="{DynamicResource Brush.GlassBorder}" />
+                    <Button Style="{StaticResource Button.Ghost}" Foreground="White" Command="{Binding BackCommand}" c:Ui.Icon="{StaticResource Icon.Undo}" Content="{c:Tr 'Все игры', 'All games'}"
+                            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14" Background="#55000000" />
+                    <Grid VerticalAlignment="Bottom" Margin="26,0,26,22">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Selected.Name}" FontFamily="{StaticResource Font.Display}" FontSize="32" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Foreground="#CCFFFFFF" FontSize="13">
+                                <Run Text="{Binding Selected.Source, Mode=OneWay}" /><Run Text="   " /><Run Text="{Binding Selected.Detail, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                            <Button Command="{Binding OpenGameFolderCommand}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Папка', 'Folder'}" Margin="{StaticResource Gap.Right8}"
+                                    Visibility="{Binding Selected.InstallDir, Converter={StaticResource NullToVis}}" />
+                            <Button Style="{StaticResource Button.Primary}" Command="{Binding LaunchCommand}" c:Ui.Icon="{StaticResource Icon.Play}" Content="{c:Tr 'Играть', 'Play'}" Padding="22,9"
+                                    Visibility="{Binding CanLaunch, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <!-- Вкладки -->
+                <Border Style="{StaticResource SegmentHost}" Margin="{StaticResource Gap.Bottom16}">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Style="{StaticResource Segment}" GroupName="gtab" Content="{c:Tr 'Оптимизация CS2', 'CS2 optimization'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=cs2}"
+                                     Visibility="{Binding Selected.IsCs2, Converter={StaticResource BoolToVis}}" />
+                        <RadioButton Style="{StaticResource Segment}" GroupName="gtab" Content="{c:Tr 'Конфиги NOVA', 'NOVA configs'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=nova}"
+                                     Visibility="{Binding Selected.IsCs2, Converter={StaticResource BoolToVis}}" />
+                        <RadioButton Style="{StaticResource Segment}" GroupName="gtab" Content="{c:Tr 'Конфиги и бэкапы', 'Configs &amp; backups'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=configs}"
+                                     Visibility="{Binding Selected.IsSupported, Converter={StaticResource BoolToVis}}" />
+                        <RadioButton Style="{StaticResource Segment}" GroupName="gtab" Content="{c:Tr 'Советы', 'Tips'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=tips}"
+                                     Visibility="{Binding Selected.IsSupported, Converter={StaticResource BoolToVis}}" />
+                        <RadioButton Style="{StaticResource Segment}" GroupName="gtab" Content="{c:Tr 'Заметки', 'Notes'}" IsChecked="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=notes}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- CS2 -->
+                <ContentControl Content="{Binding Cs2}" Focusable="False" Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=cs2}" />
+
+                <!-- Конфиги NOVA -->
+                <StackPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=nova}">
+                    <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Bottom16}"
+                               Text="{c:Tr 'Три конфига от NOVA TUNE. Только стандартные команды CS2: без читов, мультибиндов и серверных команд — безопасно для VAC. Перед записью создаётся бэкап, откатить можно на вкладке «Конфиги и бэкапы».', 'Three configs by NOVA TUNE. Only standard CS2 commands: no cheats, multi-action binds or server commands — VAC-safe. A backup is made before writing; roll back on the Configs &amp; backups tab.'}" />
+                    <ItemsControl ItemsSource="{Binding NovaConfigs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="3" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:NovaConfigRow}">
+                                <c:GlassPanel Margin="0,0,16,16">
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Bottom" Margin="{StaticResource Gap.Top16}">
+                                            <Border Background="{DynamicResource Brush.Input}" CornerRadius="8" Padding="10,6" Margin="{StaticResource Gap.Bottom8}">
+                                                <TextBlock Text="{Binding Exec}" Style="{StaticResource Text.Mono}" />
+                                            </Border>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Style="{StaticResource Button.Primary}" Command="{Binding DataContext.ApplyNovaCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        c:Ui.Icon="{StaticResource Icon.Download}" Content="{c:Tr 'Установить', 'Install'}" Margin="{StaticResource Gap.Right8}" />
+                                                <Button Style="{StaticResource Button.Icon}" Command="{Binding DataContext.CopyExecCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        c:Ui.Icon="{StaticResource Icon.Copy}" ToolTip="{c:Tr 'Скопировать параметр запуска', 'Copy launch option'}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Title}" />
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </c:GlassPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Конфиги и бэкапы -->
+                <Grid Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=configs}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <c:GlassPanel VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="{c:Tr 'Где лежат конфиги', 'Where configs live'}" Style="{StaticResource Text.Subtitle}" />
+                            <TextBlock Text="{Binding ConfigSummary}" Style="{StaticResource Text.Caption}" Margin="0,4,0,12" />
+                            <ItemsControl ItemsSource="{Binding ConfigDirs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ConfigDirRow}">
+                                        <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,8" Margin="{StaticResource Gap.Item}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Style="{StaticResource Text.Caption}"><Run Text="{Binding Kind, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Files, Mode=OneWay}" /><Run Text="{c:Tr ' файлов', ' files'}" /></TextBlock>
+                                                    <TextBlock Text="{Binding Path}" Style="{StaticResource Text.Mono}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Style="{StaticResource Button.Icon}" Command="{Binding DataContext.OpenConfigDirCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        c:Ui.Icon="{StaticResource Icon.Folder}" ToolTip="{c:Tr 'Открыть папку', 'Open folder'}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top12}">
+                                <Button Style="{StaticResource Button.Primary}" Command="{Binding BackupConfigsCommand}" c:Ui.Icon="{StaticResource Icon.Shield}" Content="{c:Tr 'Сделать бэкап конфигов', 'Back up configs'}"
+                                        IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                                <ContentControl Style="{StaticResource Spinner}" Margin="12,0,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </c:GlassPanel>
+                    <c:GlassPanel Grid.Column="2" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="{c:Tr 'Бэкапы конфигов', 'Config backups'}" Style="{StaticResource Text.Subtitle}" />
+                            <TextBlock Text="{c:Tr 'Откат возвращает файлы с проверкой хэша. Закройте игру перед откатом.', 'Rollback restores files with hash verification. Close the game before rolling back.'}" Style="{StaticResource Text.Caption}" Margin="0,4,0,12" />
+                            <TextBlock Text="{c:Tr 'Бэкапов этой игры пока нет.', 'No backups for this game yet.'}" Style="{StaticResource Text.Secondary}"
+                                       Visibility="{Binding GameBackups.Count, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
+                            <ItemsControl ItemsSource="{Binding GameBackups}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:BackupRow}">
+                                        <Border Background="{DynamicResource Brush.Input}" CornerRadius="10" Padding="12,8" Margin="{StaticResource Gap.Item}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Date}" Style="{StaticResource Text.Body}" FontWeight="SemiBold" />
+                                                    <TextBlock Style="{StaticResource Text.Caption}"><Run Text="{Binding Count, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Status, Mode=OneWay}" /></TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Button Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                            c:Ui.Icon="{StaticResource Icon.Undo}" Content="{c:Tr 'Откатить', 'Roll back'}" Margin="{StaticResource Gap.Right8}" />
+                                                    <Button Style="{StaticResource Button.Icon}" Command="{Binding DataContext.DeleteBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                            c:Ui.Icon="{StaticResource Icon.Trash}" ToolTip="{c:Tr 'Удалить', 'Delete'}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </c:GlassPanel>
+                </Grid>
+
+                <!-- Советы -->
+                <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=tips}">
+                    <ItemsControl ItemsSource="{Binding Tips}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Bottom12}">
+                                    <Viewbox Width="16" Height="16" VerticalAlignment="Top" Margin="0,2,12,0">
+                                        <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Info}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" /></Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding}" Style="{StaticResource Text.Body}" MaxWidth="900" />
                                 </StackPanel>
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <TextBlock Text="{c:Tr 'Игр не найдено. Добавьте игру вручную.', 'No games found. Add one manually.'}" Style="{StaticResource Text.Secondary}" Margin="16"
-                               Visibility="{Binding Games.Count, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
-                </Grid>
-            </c:GlassPanel>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </c:GlassPanel>
 
-            <c:GlassPanel Grid.Column="2" VerticalAlignment="Top" Visibility="{Binding Selected, Converter={StaticResource NullToVis}}">
-                <StackPanel DataContext="{Binding Selected}">
-                    <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Title}" />
-                    <TextBlock Text="{Binding Source}" Style="{StaticResource Text.Caption}" />
-                    <TextBlock Text="{Binding Path}" Style="{StaticResource Text.Mono}" Margin="{StaticResource Gap.Top12}" />
-                    <TextBlock Text="{Binding Detail}" Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top4}" />
-                    <TextBlock Text="{c:Tr 'Профиль', 'Profile'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top16}" />
-                    <ComboBox ItemsSource="{Binding DataContext.Profiles, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding Profile}" Margin="{StaticResource Gap.Top4}" HorizontalAlignment="Left" MinWidth="200" />
-                    <TextBlock Text="{c:Tr 'Заметки', 'Notes'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top16}" />
-                    <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" VerticalContentAlignment="Top" Margin="{StaticResource Gap.Top4}" />
-                    <WrapPanel Margin="{StaticResource Gap.Top16}">
-                        <Button Style="{StaticResource Button.Primary}" Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" c:Ui.Icon="{StaticResource Icon.Check}" Content="{c:Tr 'Сохранить', 'Save'}" Margin="0,0,8,8" />
-                        <Button Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" c:Ui.Icon="{StaticResource Icon.Folder}" Content="{c:Tr 'Открыть папку', 'Open folder'}" Margin="0,0,8,8" />
-                        <Button Style="{StaticResource Button.Danger}" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" c:Ui.Icon="{StaticResource Icon.Trash}" Content="{c:Tr 'Убрать из списка', 'Remove from list'}" Margin="0,0,8,8"
-                                Visibility="{Binding IsManual, Converter={StaticResource BoolToVis}}" />
-                    </WrapPanel>
-                </StackPanel>
-            </c:GlassPanel>
-        </Grid>
-    </DockPanel>
+                <!-- Заметки -->
+                <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=notes}">
+                    <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+                        <TextBlock Text="{c:Tr 'Профиль', 'Profile'}" Style="{StaticResource Text.Label}" />
+                        <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding GameProfile}" Margin="{StaticResource Gap.Top4}" HorizontalAlignment="Left" MinWidth="200" />
+                        <TextBlock Text="{c:Tr 'Заметки', 'Notes'}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top16}" />
+                        <TextBox Text="{Binding GameNotes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="110" VerticalContentAlignment="Top" Margin="{StaticResource Gap.Top4}" Width="600" HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top16}">
+                            <Button Style="{StaticResource Button.Primary}" Command="{Binding SaveNotesCommand}" c:Ui.Icon="{StaticResource Icon.Check}" Content="{c:Tr 'Сохранить', 'Save'}" Margin="{StaticResource Gap.Right8}" />
+                            <Button Style="{StaticResource Button.Danger}" Command="{Binding RemoveCommand}" c:Ui.Icon="{StaticResource Icon.Trash}" Content="{c:Tr 'Убрать из списка', 'Remove from list'}"
+                                    Visibility="{Binding Selected.IsManual, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </StackPanel>
+                </c:GlassPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
