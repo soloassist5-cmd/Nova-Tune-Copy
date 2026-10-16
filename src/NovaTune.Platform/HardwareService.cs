@@ -393,7 +393,8 @@ public sealed class HardwareService(StorageService storage, ILog log)
         {
             foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (nic.OperationalStatus != OperationalStatus.Up || nic.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel)
+                if (nic.OperationalStatus != OperationalStatus.Up || nic.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel
+                    || NetworkAdapterFilter.IsServiceAdapter(nic.Name, nic.Description))
                 {
                     continue;
                 }
@@ -402,6 +403,12 @@ public sealed class HardwareService(StorageService storage, ILog log)
                     .Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork)
                     .Select(a => a.Address.ToString())
                     .FirstOrDefault();
+
+                // Без IPv4-адреса это служебный интерфейс (фильтр, мост) — реального подключения через него нет.
+                if (ipv4 is null)
+                {
+                    continue;
+                }
                 var speed = nic.Speed > 0 ? (nic.Speed >= 1_000_000_000 ? $"{nic.Speed / 1_000_000_000.0:0.#} Gbit/s" : $"{nic.Speed / 1_000_000} Mbit/s") : null;
                 var type = nic.NetworkInterfaceType switch
                 {

@@ -34,3 +34,21 @@ public class RecordingSettingsTests
         Assert.Equal(3, s.Recording.OverlayCorner);
     }
 }
+
+public class NetworkAdapterFilterTests
+{
+    [Theory]
+    [InlineData("Ethernet-WFP Native MAC Layer LightWeight Filter-0000", "Realtek PCIe GbE Family Controller-WFP Native MAC Layer LightWeight Filter-0000")]
+    [InlineData("Ethernet-QoS Packet Scheduler-0000", "Realtek PCIe GbE Family Controller-QoS Packet Scheduler-0000")]
+    [InlineData("Подключение по локальной сети* 3", "WAN Miniport (Network Monitor)")]
+    [InlineData("vSwitch (Default Switch)-Hyper-V Virtual Switch Extension Filter-0000", "Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000")]
+    public void ServiceAdapters_AreHidden(string name, string description) =>
+        Assert.True(NovaTune.Core.Hardware.NetworkAdapterFilter.IsServiceAdapter(name, description));
+
+    [Theory]
+    [InlineData("Ethernet", "Realtek PCIe GbE Family Controller")]
+    [InlineData("Radmin VPN", "Famatech Radmin VPN Ethernet Adapter")]
+    [InlineData("Wi-Fi", "Intel(R) Wi-Fi 6 AX201 160MHz")]
+    public void RealAdapters_AreShown(string name, string description) =>
+        Assert.False(NovaTune.Core.Hardware.NetworkAdapterFilter.IsServiceAdapter(name, description));
+}

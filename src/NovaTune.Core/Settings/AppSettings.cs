@@ -57,6 +57,9 @@ public sealed class AppSettings
 
     public RecordingSettings Recording { get; set; } = new();
 
+    /// <summary>Свёрнутые блоки в «Мой ПК» (по Id раздела). null — по умолчанию свёрнута только «Сеть».</summary>
+    public List<string>? CollapsedSections { get; set; }
+
     public void Normalize()
     {
         Recording ??= new();

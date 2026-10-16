@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:NovaTune.App.Controls"
+             xmlns:vm="clr-namespace:NovaTune.App.ViewModels"
              xmlns:hw="clr-namespace:NovaTune.Core.Hardware;assembly=NovaTune.Core">
     <UserControl.Resources>
         <!-- Строка «название — значение»; недоступные значения — приглушённым цветом с причиной. -->
@@ -29,14 +30,52 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
-        <DataTemplate x:Key="SectionCard" DataType="{x:Type hw:InfoSection}">
+        <!-- Блок раздела: заголовок-кнопка сворачивает и разворачивает содержимое; в свёрнутом виде — краткая сводка. -->
+        <DataTemplate x:Key="SectionCard" DataType="{x:Type vm:SectionCard}">
             <c:GlassPanel Margin="{StaticResource Gap.Card}">
                 <StackPanel>
-                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Subtitle}" Margin="{StaticResource Gap.Bottom12}" />
-                    <ItemsControl ItemsSource="{Binding Items}" />
-                    <ItemsControl ItemsSource="{Binding Children}" ItemTemplate="{StaticResource SubSection}" />
+                    <Button Command="{Binding ToggleCommand}" Cursor="Hand" Focusable="False" HorizontalContentAlignment="Stretch">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bg" Background="Transparent" CornerRadius="10" Padding="6,4" Margin="-6,-4">
+                                    <ContentPresenter />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Brush.HoverOverlay}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Subtitle}" />
+                                <TextBlock x:Name="Summary" Text="{Binding Summary}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" Margin="{StaticResource Gap.Top4}"
+                                           Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                            </StackPanel>
+                            <Viewbox x:Name="Chevron" Grid.Column="1" Width="16" Height="16" VerticalAlignment="Center" Margin="12,0,0,0" RenderTransformOrigin="0.5,0.5">
+                                <Viewbox.RenderTransform><RotateTransform Angle="0" /></Viewbox.RenderTransform>
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.ChevronDown}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.TextSecondary}" StrokeThickness="2.8" /></Canvas>
+                            </Viewbox>
+                        </Grid>
+                    </Button>
+                    <StackPanel x:Name="Body" Margin="{StaticResource Gap.Top12}" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                        <ItemsControl ItemsSource="{Binding Items}" />
+                        <ItemsControl ItemsSource="{Binding Children}" ItemTemplate="{StaticResource SubSection}" />
+                    </StackPanel>
                 </StackPanel>
             </c:GlassPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                    <Setter TargetName="Chevron" Property="RenderTransform">
+                        <Setter.Value><RotateTransform Angle="180" /></Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
 
@@ -52,6 +91,8 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="{Binding CollectedAt}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right12}" />
+                <Button Style="{StaticResource Button.Ghost}" Command="{Binding ExpandAllCommand}" Content="{c:Tr 'Развернуть все', 'Expand all'}" Margin="{StaticResource Gap.Right8}" />
+                <Button Style="{StaticResource Button.Ghost}" Command="{Binding CollapseAllCommand}" Content="{c:Tr 'Свернуть все', 'Collapse all'}" Margin="{StaticResource Gap.Right8}" />
                 <Button Command="{Binding RefreshCommand}" c:Ui.Icon="{StaticResource Icon.Refresh}" Content="{c:Tr 'Обновить', 'Refresh'}" Margin="{StaticResource Gap.Right8}" />
                 <Button Style="{StaticResource Button.Primary}" Command="{Binding CopyCommand}" c:Ui.Icon="{StaticResource Icon.Copy}" Content="{c:Tr 'Скопировать сведения', 'Copy details'}" />
             </StackPanel>

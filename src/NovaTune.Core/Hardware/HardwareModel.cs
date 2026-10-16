@@ -111,6 +111,22 @@ public sealed record HardwareReport(HardwareSummary Summary, IReadOnlyList<InfoS
     }
 }
 
+/// <summary>
+/// Служебные «адаптеры» Windows — фильтры WFP/QoS, расширения Hyper-V, WAN Miniport. Они дублируют реальные
+/// подключения и только засоряют список, поэтому в «Мой ПК» не показываются.
+/// </summary>
+public static class NetworkAdapterFilter
+{
+    private static readonly string[] Markers =
+    [
+        "-WFP ", "-QoS Packet Scheduler", "LightWeight Filter", "Virtual Switch Extension Filter",
+        "WAN Miniport", "Kernel Debug", "Teredo", "6to4", "ISATAP",
+    ];
+
+    public static bool IsServiceAdapter(string name, string description) =>
+        Markers.Any(m => name.Contains(m, StringComparison.OrdinalIgnoreCase) || description.Contains(m, StringComparison.OrdinalIgnoreCase));
+}
+
 public static class Units
 {
     public static string Bytes(double bytes)
