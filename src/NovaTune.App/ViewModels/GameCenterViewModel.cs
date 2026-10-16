@@ -34,7 +34,13 @@ public sealed partial class GameCard : ObservableObject
 
     public string? InstallDir { get; init; }
 
-    public string Initials => string.Concat(Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
+    /// <summary>Инициалы для карточки без обложки: только буквы и цифры (без скобок, «™» и т.п.).</summary>
+    public string Initials => string.Concat(Name
+        .Split([' ', '-', ':', '(', ')'], StringSplitOptions.RemoveEmptyEntries)
+        .Select(w => w.FirstOrDefault(char.IsLetterOrDigit))
+        .Where(ch => ch != default)
+        .Take(2)
+        .Select(char.ToUpperInvariant));
 
     public bool IsSupported => Profile is not null;
 
@@ -466,7 +472,13 @@ public sealed partial class GameCenterViewModel(MainViewModel main) : PageViewMo
 
     public bool CanLaunch => Selected?.App is not null || Selected?.Entry.ExecutablePath is not null;
 
-    partial void OnSelectedChanged(GameCard? value) => OnPropertyChanged(nameof(CanLaunch));
+    public string SelectedExe => Selected?.Entry.ExecutablePath ?? "—";
+
+    partial void OnSelectedChanged(GameCard? value)
+    {
+        OnPropertyChanged(nameof(CanLaunch));
+        OnPropertyChanged(nameof(SelectedExe));
+    }
 
     [RelayCommand]
     private void OpenGameFolder() => ChangeRunner.OpenFolder(Selected?.InstallDir ?? "");
@@ -491,25 +503,131 @@ public sealed partial class GameCenterViewModel(MainViewModel main) : PageViewMo
         S.Toasts.Show(Loc.T("Сохранено", "Saved"), DialogKind.Success);
     }
 
+    /// <summary>
+    /// Добавление вручную: выбирается EXE игры (это и есть кнопка «Играть»), папка определяется по нему.
+    /// Если EXE выбрать не получилось — можно указать папку, и приложение поищет EXE в ней само.
+    /// </summary>
     [RelayCommand]
     private void Add()
     {
-        var dialog = new OpenFolderDialog { Title = Loc.T("Папка игры", "Game folder") };
+        var exe = new OpenFileDialog
+        {
+            Title = Loc.T("Выберите EXE игры (не установщик и не папку с сохранениями)", "Select the game EXE (not an installer or a saves folder)"),
+            Filter = Loc.T("Программы", "Programs") + "|*.exe",
+        };
+        string? exePath = null;
+        string folder;
+        if (exe.ShowDialog() == true)
+        {
+            exePath = exe.FileName;
+            folder = Path.GetDirectoryName(exePath)!;
+        }
+        else
+        {
+            var dialog = new OpenFolderDialog { Title = Loc.T("Или выберите папку установки игры", "Or select the game install folder") };
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            folder = dialog.FolderName;
+            exePath = GuessExe(folder);
+        }
+
+        var entry = new GameEntry
+        {
+            Name = GuessName(exePath, folder),
+            InstallDir = folder,
+            ExecutablePath = exePath,
+        };
+        S.Settings.Current.Games.Add(entry);
+        S.Settings.Save();
+        S.Toasts.Show(exePath is null
+            ? Loc.T("Игра добавлена без EXE — укажите его на странице игры, чтобы появилась кнопка «Играть».", "Game added without an EXE — set it on the game page to get the Play button.")
+            : Loc.T("Игра добавлена: ", "Game added: ") + entry.Name, exePath is null ? DialogKind.Warning : DialogKind.Success);
+        _ = LoadAsync();
+    }
+
+    /// <summary>Указать или сменить EXE у игры, добавленной вручную.</summary>
+    [RelayCommand]
+    private void SetExe()
+    {
+        if (Selected is not { IsManual: true } card)
+        {
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Title = Loc.T("Выберите EXE игры", "Select the game EXE"),
+            Filter = Loc.T("Программы", "Programs") + "|*.exe",
+            InitialDirectory = Directory.Exists(card.InstallDir) ? card.InstallDir : null,
+        };
         if (dialog.ShowDialog() != true)
         {
             return;
         }
 
-        var exe = new OpenFileDialog { Title = Loc.T("Исполняемый файл игры (можно пропустить)", "Game executable (optional)"), Filter = "EXE|*.exe", InitialDirectory = dialog.FolderName };
-        var entry = new GameEntry
-        {
-            Name = Path.GetFileName(dialog.FolderName.TrimEnd('\\')),
-            InstallDir = dialog.FolderName,
-            ExecutablePath = exe.ShowDialog() == true ? exe.FileName : null,
-        };
-        S.Settings.Current.Games.Add(entry);
+        card.Entry.ExecutablePath = dialog.FileName;
+        card.Entry.InstallDir = Path.GetDirectoryName(dialog.FileName);
         S.Settings.Save();
-        _ = LoadAsync();
+        OnPropertyChanged(nameof(CanLaunch));
+        OnPropertyChanged(nameof(SelectedExe));
+        S.Toasts.Show(Loc.T("EXE сохранён — кнопка «Играть» доступна", "EXE saved — the Play button is available"), DialogKind.Success);
+    }
+
+    /// <summary>
+    /// Поиск EXE игры в папке (верхний уровень и один уровень вглубь, например Binaries или bin).
+    /// Исключаются установщики, деинсталляторы и служебные программы; из оставшихся — самый большой файл.
+    /// </summary>
+    internal static string? GuessExe(string folder)
+    {
+        string[] skip = ["unins", "setup", "install", "crash", "report", "redist", "vcredist", "dxsetup", "dotnet", "update", "helper", "launcherhelper", "easyanticheat_setup", "cleanup"];
+        try
+        {
+            var candidates = Directory.EnumerateFiles(folder, "*.exe", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateDirectories(folder).SelectMany(d =>
+                {
+                    try
+                    {
+                        return Directory.EnumerateFiles(d, "*.exe", SearchOption.TopDirectoryOnly);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        return [];
+                    }
+                }))
+                .Where(f => !skip.Any(k => Path.GetFileName(f).Contains(k, StringComparison.OrdinalIgnoreCase)))
+                .Select(f => new FileInfo(f))
+                .OrderByDescending(f => f.Length)
+                .FirstOrDefault();
+            return candidates?.FullName;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private static string GuessName(string? exePath, string folder)
+    {
+        if (exePath is not null)
+        {
+            try
+            {
+                var product = FileVersionInfo.GetVersionInfo(exePath).ProductName?.Trim();
+                if (!string.IsNullOrWhiteSpace(product) && product.Length <= 60)
+                {
+                    return product;
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // Имя возьмём из папки.
+            }
+        }
+
+        return Path.GetFileName(folder.TrimEnd('\\'));
     }
 
     [RelayCommand]

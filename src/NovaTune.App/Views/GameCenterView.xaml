@@ -293,6 +293,24 @@
                     </ItemsControl>
                 </c:GlassPanel>
 
+                <!-- Инструкция для игр, добавленных вручную -->
+                <c:GlassPanel Margin="{StaticResource Gap.Card}" Visibility="{Binding Selected.IsManual, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="18" Height="18" Margin="{StaticResource Gap.Right8}">
+                                <Canvas Width="24" Height="24"><Path Data="{StaticResource Icon.Info}" Style="{StaticResource IconPath}" Stroke="{DynamicResource Brush.AccentText}" /></Canvas>
+                            </Viewbox>
+                            <TextBlock Text="{c:Tr 'Как добавить игру вручную, чтобы работала кнопка «Играть»', 'How to add a game manually so the Play button works'}" Style="{StaticResource Text.Subtitle}" />
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Text.Secondary}" Margin="{StaticResource Gap.Top8}" LineHeight="22"
+                                   Text="{c:Tr '1. Нажмите «Указать EXE» и выберите исполняемый файл самой игры — обычно он лежит в папке установки (например, C:\Program Files\EA Games\FC 24\FC24.exe).&#x0a;2. Не выбирайте папку в «Документах»: там только сохранения и настройки, а не игра.&#x0a;3. Если не знаете, где игра: правый клик по ярлыку игры → «Расположение файла» — откроется папка с нужным EXE.&#x0a;4. Игры из Steam добавлять не нужно — они появляются в библиотеке сами.', '1. Click Select EXE and choose the game executable itself — it usually sits in the install folder (e.g. C:\Program Files\EA Games\FC 24\FC24.exe).&#x0a;2. Do not pick a folder in Documents: it only holds saves and settings, not the game.&#x0a;3. Not sure where the game is? Right-click the game shortcut → Open file location — it opens the folder with the EXE.&#x0a;4. Steam games do not need to be added — they appear in the library automatically.'}" />
+                        <TextBlock Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top12}">
+                            <Run Text="{c:Tr 'Сейчас EXE:', 'Current EXE:'}" /> <Run Text="{Binding SelectedExe, Mode=OneWay}" />
+                        </TextBlock>
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding SetExeCommand}" c:Ui.Icon="{StaticResource Icon.Search}" Content="{c:Tr 'Указать EXE', 'Select EXE'}" HorizontalAlignment="Left" Margin="{StaticResource Gap.Top12}" />
+                    </StackPanel>
+                </c:GlassPanel>
+
                 <!-- Заметки -->
                 <c:GlassPanel Visibility="{Binding Tab, Converter={StaticResource Eq}, ConverterParameter=notes}">
                     <StackPanel MaxWidth="760" HorizontalAlignment="Left">
